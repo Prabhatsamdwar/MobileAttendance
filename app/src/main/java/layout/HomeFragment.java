@@ -3,6 +3,7 @@ package layout;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,8 +12,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.tung.mobileattendance.CourseList;
 import com.example.tung.mobileattendance.HomeListAdapter;
 import com.example.tung.mobileattendance.R;
+
 
 /**
  * A simple {@link Fragment} subclass.
@@ -27,6 +30,9 @@ public class HomeFragment extends Fragment {
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
+    private CourseList course;
+    private FloatingActionButton floatingActionButton;
+
 
     // TODO: Rename and change types of parameters
     private String mParam1;
@@ -73,16 +79,30 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
        View view= inflater.inflate(R.layout.fragment_home, container, false);
 
+        floatingActionButton= (FloatingActionButton) view.findViewById(R.id.fab);
+         floatingActionButton.setOnClickListener(new View.OnClickListener() {
+             @Override
+              public void onClick(View view) {
+              mListener.openAddCourseScreen();
+             }
+         });
+
+         course= (CourseList) getArguments().getSerializable("List_of_Course");
 
  /*Init recycler view*/
         recyclerView = (RecyclerView) view.findViewById(R.id.all_notes_list);
-        homeListAdapter= new HomeListAdapter();
+        homeListAdapter = new HomeListAdapter();
+        homeListAdapter.setCourseList(course.getCourseList());
+
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(mLayoutManager);
         recyclerView.setItemAnimator(new DefaultItemAnimator());
         recyclerView.setAdapter(homeListAdapter);
 
+      ;
+
        return view;
+
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -122,5 +142,8 @@ public class HomeFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+
+        void openAddCourseScreen();
+
     }
 }

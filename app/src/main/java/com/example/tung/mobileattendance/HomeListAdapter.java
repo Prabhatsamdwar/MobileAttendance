@@ -6,12 +6,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.List;
+
 /**
  * Created by tung on 10/10/16.
+ *
  */
+public class HomeListAdapter extends RecyclerView.Adapter<HomeListAdapter.ListViewHolder> {
+    private static final String TAG = "HomeListAdapter";
 
-public class HomeListAdapter extends RecyclerView.Adapter<HomeListAdapter.ListViewHolder>{
+    private List<Course> courseList;
 
+    public void setCourseList(List<Course> courseList) {
+        this.courseList = courseList;
+    }
 
     @Override
     public ListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -22,25 +30,29 @@ public class HomeListAdapter extends RecyclerView.Adapter<HomeListAdapter.ListVi
 
     @Override
     public void onBindViewHolder(ListViewHolder holder, int position) {
-        holder.header.setText("Operating Syestem");
-        holder.note.setText("MCA");
+        holder.courseName.setText(courseList.get(position).getTitle());
+        holder.className.setText(courseList.get(position).getClassName());
 
 
 
     }
 
     @Override
-    public int getItemCount() {
-        return 5;
+    public int getItemCount()
+    {
+        return courseList.size();
     }
     public class ListViewHolder extends RecyclerView.ViewHolder {
-        private TextView header;
-        private TextView note;
+        private TextView courseName;
+        private TextView className;
 
         public ListViewHolder(View itemView) {
             super(itemView);
-            header = (TextView) itemView.findViewById(R.id.header_text);
-            note = (TextView) itemView.findViewById(R.id.content_text);
+            courseName = (TextView) itemView.findViewById(R.id.header_text);
+            className = (TextView) itemView.findViewById(R.id.content_text);
         }
+    }
+    public interface OnListItemClickListener {
+        public void onClick(View view, int noteId);
     }
 }
