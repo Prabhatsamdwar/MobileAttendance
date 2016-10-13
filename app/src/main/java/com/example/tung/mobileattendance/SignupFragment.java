@@ -3,80 +3,80 @@ package com.example.tung.mobileattendance;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link LoginFragment.OnFragmentInteractionListener} interface
+ * {@link SignupFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link LoginFragment#newInstance} factory method to
+ * Use the {@link SignupFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class LoginFragment extends Fragment {
-    private Button loginButton;
-    private DataBaseHelper dataBaseHelperLogin;
+public class SignupFragment extends Fragment {
+
+    private Button button;
+
     private OnFragmentInteractionListener mListener;
-    private TextView signUpTextView;
-    public LoginFragment() {
+
+    public SignupFragment() {
         // Required empty public constructor
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_login_fragment, container, false);
-
+        View view=inflater.inflate(R.layout.fragment_signup, container, false);
         Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
 
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        actionBar.setTitle("Sign In");
+        actionBar.setTitle("Sign Up");
+        button= (Button)view.findViewById(R.id.sign_button);
+        final EditText usernameEditText= (EditText) view.findViewById(R.id.username1_layout);
+        final EditText emailEditText= (EditText) view.findViewById(R.id.email_layout);
+        final EditText passwordEditText= (EditText) view.findViewById(R.id.password_layout);
 
-
-        loginButton = (Button) view.findViewById(R.id.Login_button);
-        final EditText userNameEditText = (EditText) view.findViewById(R.id.login_username);
-        final EditText passwordEditText = (EditText) view.findViewById(R.id.login_password);
-        signUpTextView = (TextView) view.findViewById(R.id.sign_up_textView);
-        dataBaseHelperLogin =  new DataBaseHelper(getActivity());
-        loginButton.setOnClickListener(new View.OnClickListener() {
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String login_username = userNameEditText.getText().toString();
-                String password = passwordEditText.getText().toString();
+                String username=usernameEditText.getText().toString();
+                String email=emailEditText.getText().toString();
+                String password=passwordEditText.getText().toString();
 
-                boolean isValidUser = dataBaseHelperLogin.getLogin(login_username, password);
-                if (isValidUser == true) {
-                    mListener.onSuccessOpenHomescreen();
-                }else {
-                    Toast.makeText(getActivity(), "Either your username or password is wrong", Toast.LENGTH_LONG).show();
+                if(TextUtils.isEmpty(username)){
+                    usernameEditText.setError("username name can't be empty !");
+                    return;
                 }
-
+                if(TextUtils.isEmpty(email)){
+                    emailEditText.setError(" email id can't be empty !");
+                    return;
+                }
+                if(TextUtils.isEmpty(password)){
+                    passwordEditText.setError("password name can't be empty !");
+                    return;
+                }
+                Log.d("button","login added");
+                mListener.addNewUserToDataBase(username,email,password);
             }
         });
 
-        signUpTextView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                mListener.openSignUpScreen();
-            }
-        });
         return view;
-    }
 
+    }
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
@@ -115,9 +115,6 @@ public class LoginFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
-
-        void onSuccessOpenHomescreen();
-
-        void openSignUpScreen();
+        void addNewUserToDataBase(String userName,String email,String password);
     }
 }

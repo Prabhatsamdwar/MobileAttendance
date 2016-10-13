@@ -15,5 +15,9 @@
         <item name="colorControlActivated">@color/your color</item>
         <item name="colorControlHighlight">@color/BackgroundtWhiteColor</item>-->
     </style>
+    <style name="Toolbar.TitleText" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#ffffff</item>
+    </style>
 
 </resources>

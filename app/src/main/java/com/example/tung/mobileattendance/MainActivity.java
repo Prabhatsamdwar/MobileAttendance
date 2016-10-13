@@ -1,19 +1,23 @@
 package com.example.tung.mobileattendance;
 
 import android.net.Uri;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
 import java.util.List;
 
-import layout.HomeFragment;
-
-public class MainActivity extends AppCompatActivity implements LoginFragment.OnFragmentInteractionListener, HomeFragment.OnFragmentInteractionListener, AddCourseFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener, LoginFragment.OnFragmentInteractionListener, AddStudentFragment.OnFragmentInteractionListener, EnrollStudentFragment.OnFragmentInteractionListener, SignupFragment.OnFragmentInteractionListener, HomeFragment.OnFragmentInteractionListener, AddCourseFragment.OnFragmentInteractionListener {
     LoginFragment loginFragment;
     HomeFragment homeFragment;
     AddCourseFragment addCourseFragment;
+    SignupFragment singupFragment;
+    EnrollStudentFragment enrollStudentFragment;
+    AddStudentFragment addStudentFragment;
     private DataBaseHelper dataBaseHelper;
+    private Toolbar toolbar;
 
 
     @Override
@@ -21,19 +25,54 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        openLoginFragment();
-        //openHomeFragment();
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Mobile Attendance");
+
+        openLoginFragment();
 //        openAddCourseFragment();
-
+//        openSignupFragment();
+//            openEnrollStudentFragment();
+        //openAddStudentFragment();
         dataBaseHelper = new DataBaseHelper(getApplicationContext());
-        /*Course course = new Course();
-        course.setTitle("Title");
-        course.setClassName("Class Name");
-        course.setSection("Section");
-        dataBaseHelper.createCourse(course);*/
-        List<Course> courseList = dataBaseHelper.getAllCourse();
 
-        openHomeFragment(courseList);
+//         List<Course> courseList = dataBaseHelper.getAllCourse();
+
+//         openHomeFragment(courseList);
+    }
+
+
+    private void openEnrollStudentFragment() {
+        android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+        enrollStudentFragment = new EnrollStudentFragment();
+
+        fragmentTransaction.replace(R.id.fragment, enrollStudentFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+
+    }
+
+    private void openAddStudentFragment() {
+        android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+        addStudentFragment = new AddStudentFragment();
+
+        fragmentTransaction.replace(R.id.fragment, addStudentFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+
+    }
+
+    private void openSignupFragment() {
+        android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+        singupFragment = new SignupFragment();
+
+        fragmentTransaction.replace(R.id.fragment, singupFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
+
     }
 
     private void openLoginFragment() {
@@ -41,7 +80,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
         loginFragment = new LoginFragment();
 
-        fragmentTransaction.add(R.id.fragment, loginFragment);
+        fragmentTransaction.replace(R.id.fragment, loginFragment);
         fragmentTransaction.commit();
 
     }
@@ -59,6 +98,8 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         homeFragment = new HomeFragment();
         homeFragment.setArguments(bundle);
         fragmentTransaction.replace(R.id.fragment, homeFragment);
+        supportFragmentManager.popBackStack();
+
         fragmentTransaction.commit();
 
     }
@@ -69,6 +110,7 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         addCourseFragment = new AddCourseFragment();
 
         fragmentTransaction.replace(R.id.fragment, addCourseFragment);
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
 
     }
@@ -76,6 +118,32 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
 
     @Override
     public void onFragmentInteraction(Uri uri) {
+
+    }
+
+    @Override
+    public void onSuccessOpenHomescreen() {
+
+        dataBaseHelper = new DataBaseHelper(getApplicationContext());
+
+        List<Course> courseList = dataBaseHelper.getAllCourse();
+
+        openHomeFragment(courseList);
+    }
+
+    @Override
+    public void openSignUpScreen() {
+        openSignupFragment();
+    }
+
+    @Override
+    public void addNewUserToDataBase(String userName, String email, String password) {
+        Login login = new Login();
+        login.setUsername(userName);
+        login.setEmail(email);
+        login.setPassword(password);
+        dataBaseHelper.createLogin(login);
+        openLoginFragment();
 
     }
 
@@ -93,7 +161,35 @@ public class MainActivity extends AppCompatActivity implements LoginFragment.OnF
         dataBaseHelper.createCourse(course);
         Log.d("MainActivity", "Save Data in DB");
         List<Course> courseList = dataBaseHelper.getAllCourse();
-        openHomeFragment(courseList);
+        shouldDisplayHomeUp();
+        homeFragment.refresh(courseList);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (getFragmentManager().getBackStackEntryCount() == 0) {
+            super.onBackPressed();
+        } else {
+            getFragmentManager().popBackStack();
+        }
+        shouldDisplayHomeUp();
+    }
+
+    @Override
+    public void onBackStackChanged() {
+        shouldDisplayHomeUp();
+    }
+
+    private void shouldDisplayHomeUp() {
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+//        getSupportActionBar().setTitle("Mobile Attendance");
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+        shouldDisplayHomeUp();
+        getSupportFragmentManager().popBackStack();
+        return true;
     }
 }
 
