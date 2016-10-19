@@ -12,13 +12,13 @@ import java.util.List;
  * Created by tung on 10/10/16.
  *
  */
-public class HomeListAdapter extends RecyclerView.Adapter<HomeListAdapter.ListViewHolder> {
-    private static final String TAG = "HomeListAdapter";
+public class StudentListAdapter extends RecyclerView.Adapter<StudentListAdapter.ListViewHolder> {
+    private static final String TAG = "StudentListAdapter";
 
-    private List<Course> courseList;
+    private List<Student> studentList;
 
-    public void setCourseList(List<Course> courseList) {
-        this.courseList = courseList;
+    public void setStudentList(List<Student> studentList) {
+        this.studentList = studentList;
     }
 
     @Override
@@ -29,34 +29,31 @@ public class HomeListAdapter extends RecyclerView.Adapter<HomeListAdapter.ListVi
     }
 
 
-
     @Override
     public void onBindViewHolder(ListViewHolder holder, int position) {
-
-        holder.courseName.setText(courseList.get(position).getTitle());
-        holder.className.setText(courseList.get(position).getClassName());
-
+        holder.studentName.setText(studentList.get(position).getStudentName());
+        holder.rollNo.setText(studentList.get(position).getRollNo());
 
     }
-
 
 
     @Override
     public int getItemCount()
     {
-        return courseList.size();
+        return studentList.size();
     }
-
     public class ListViewHolder extends RecyclerView.ViewHolder {
-        private TextView courseName;
-        private TextView className;
+        private TextView studentName;
+        private TextView rollNo;
 
         public ListViewHolder(View itemView) {
             super(itemView);
-            courseName = (TextView) itemView.findViewById(R.id.header_text);
-            className = (TextView) itemView.findViewById(R.id.content_text);
+            studentName = (TextView) itemView.findViewById(R.id.header_text);
+            rollNo = (TextView) itemView.findViewById(R.id.content_text);
         }
     }
+
+
     public interface OnListItemClickListener {
         public void onClick(View view, int noteId);
     }

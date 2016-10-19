@@ -32,11 +32,25 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     private static final String LOGIN_EMAIL = "email";
     private static final String LOGIN_PASSWORD = "password";
 
+    //Column Name
+    private static final String STUDENT_TABLE = "student";
+
+    private static final String STUDENT_ID="id";
+    private static final String STUDENT_NAME="studentName";
+    private static final String ROLL_NO="rollno";
+    private static final String CONTACT="contact";
+
+
     private static final String CREATE_LOGIN_TABLE = "CREATE TABLE " +
             LOGIN_TABLE + " ( " + LOGIN_ID + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + LOGIN_USERNAME + " TEXT, " + LOGIN_EMAIL + " TEXT, " + LOGIN_PASSWORD + " TEXT)";
 
     private static final String CREATE_COURSE_TABLE = "CREATE TABLE " +
             COURSE_TABLE + "( " + COURSE_ID + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COURSE_TITLE + " TEXT, " + COURSE_CLASS + " TEXT, " + COURSE_SECTION + " TEXT)";
+
+    private static final String CREATE_STUDENT_TABLE="CREATE TABLE" + STUDENT_TABLE + "( " + STUDENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + STUDENT_NAME + " TEXT, " + ROLL_NO + " TEXT, " + CONTACT + " TEXT)";
+
+
+
 
     public DataBaseHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
@@ -55,6 +69,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         // creating required tables
         sqLiteDatabase.execSQL(CREATE_COURSE_TABLE);
         sqLiteDatabase.execSQL(CREATE_LOGIN_TABLE);
+        sqLiteDatabase.execSQL(CREATE_STUDENT_TABLE);
     }
 
     @Override
@@ -72,6 +87,18 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
+    public long createStudent(Student student)
+    {
+        SQLiteDatabase sqLiteDatabase=this.getWritableDatabase();
+        ContentValues contentValues=new ContentValues();
+        contentValues.put(STUDENT_NAME,student.getStudentName());
+        contentValues.put(ROLL_NO,student.getRollNo());
+        contentValues.put(CONTACT, student.getContact());
+
+        long id = sqLiteDatabase.insert(STUDENT_TABLE,null,contentValues);
+        return  id;
+    }
+
     public Course getCourse(long id) {
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
         String selectQuery = "SELECT * FROM " + COURSE_TABLE + " WHERE id = " + id;
@@ -85,6 +112,22 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return course;
     }
 
+    public Student getStudent(long id)
+    {
+        SQLiteDatabase sqLiteDatabase= this.getReadableDatabase();
+        String selectQuery = "SELECT * FROM " + COURSE_TABLE + " WHERE id = " + id;
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+        if (cursor != null) cursor.moveToFirst();
+
+        Student student = new Student();
+        student.setId(cursor.getInt(cursor.getColumnIndex(STUDENT_ID)));
+        student.setStudentName(cursor.getString(cursor.getColumnIndex(STUDENT_NAME)));
+        student.setRollNo(cursor.getString(cursor.getColumnIndex(ROLL_NO)));
+        student.setContact(cursor.getString(cursor.getColumnIndex(CONTACT)));
+
+        return student;
+
+    }
 
     /*public int updateCourse(Course course) {
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
@@ -121,6 +164,31 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return courseList;
     }
 
+
+    public List<Student> getAllStudent() {
+        List<Student> studentList = new ArrayList<Student>();
+        String selectQuery = "SELECT  * FROM " + STUDENT_TABLE;
+
+
+        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Student student = new Student();
+                student.setId(cursor.getInt((cursor.getColumnIndex(STUDENT_ID))));
+                student.setStudentName(cursor.getString(cursor.getColumnIndex(STUDENT_NAME)));
+                student.setRollNo(cursor.getString(cursor.getColumnIndex(ROLL_NO)));
+                student.setContact(cursor.getString(cursor.getColumnIndex(CONTACT)));
+
+
+                // adding to notesArrayList list
+                studentList.add(student);
+            } while (cursor.moveToNext());
+        }
+        return studentList;
+    }
 
 
     /*public void deleteNote(int id) {

@@ -9,11 +9,12 @@ import android.util.Log;
 
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener, LoginFragment.OnFragmentInteractionListener, AddStudentFragment.OnFragmentInteractionListener, EnrollStudentFragment.OnFragmentInteractionListener, SignupFragment.OnFragmentInteractionListener, HomeFragment.OnFragmentInteractionListener, AddCourseFragment.OnFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener, LoginFragment.OnFragmentInteractionListener,StudentListFragment.OnFragmentInteractionListener, AddStudentFragment.OnFragmentInteractionListener, EnrollStudentFragment.OnFragmentInteractionListener, SignupFragment.OnFragmentInteractionListener, HomeFragment.OnFragmentInteractionListener, AddCourseFragment.OnFragmentInteractionListener {
     LoginFragment loginFragment;
     HomeFragment homeFragment;
     AddCourseFragment addCourseFragment;
     SignupFragment singupFragment;
+    StudentListFragment studentListFragment;
     EnrollStudentFragment enrollStudentFragment;
     AddStudentFragment addStudentFragment;
     private DataBaseHelper dataBaseHelper;
@@ -29,16 +30,22 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Mobile Attendance");
 
-        openLoginFragment();
+        //openLoginFragment();
 //        openAddCourseFragment();
 //        openSignupFragment();
-//            openEnrollStudentFragment();
-        //openAddStudentFragment();
+//          openEnrollStudentFragment();
+        openAddStudentFragment();
         dataBaseHelper = new DataBaseHelper(getApplicationContext());
 
 //         List<Course> courseList = dataBaseHelper.getAllCourse();
 
 //         openHomeFragment(courseList);
+ // openAddStudentFragment();
+  //  openAddStudentScreen();
+
+  //      List<Student> studentList = dataBaseHelper.getAllStudent();
+//openStudentListFragment(studentList);
+
     }
 
 
@@ -122,6 +129,53 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     }
 
     @Override
+    public void openAddStudentScreen() {
+
+        dataBaseHelper = new DataBaseHelper(getApplicationContext());
+
+        List<Student> studentList = dataBaseHelper.getAllStudent();
+
+        openStudentListFragment(studentList);
+
+    }
+
+
+    private void openStudentListFragment(List<Student> studentList) {
+
+        /*Get all data from DB and pass to HomeFragment*/
+
+        android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+        Bundle bundle1 = new Bundle();
+        StudentList listOfStudent = new StudentList();
+        listOfStudent.setStudentList(studentList);
+        bundle1.putSerializable("List_of_Student", listOfStudent);
+        studentListFragment = new StudentListFragment();
+        studentListFragment.setArguments(bundle1);
+        fragmentTransaction.replace(R.id.fragment, studentListFragment);
+        supportFragmentManager.popBackStack();
+
+        fragmentTransaction.commit();
+
+    }
+
+
+
+    @Override
+    public void studentAddDataToDatabase(String studentName, String rollNo, String contact) {
+        Student student = new Student();
+        student.setStudentName(studentName);
+        student.setRollNo(rollNo);
+        student.setContact(contact);
+        dataBaseHelper.createStudent(student);
+        Log.d("MainActivity", "Save Data in DB");
+        List<Student> studentList = dataBaseHelper.getAllStudent();
+        shouldDisplayHomeUp();
+        StudentListFragment.refresh(studentList);
+
+    }
+
+    @Override
     public void onSuccessOpenHomescreen() {
 
         dataBaseHelper = new DataBaseHelper(getApplicationContext());
@@ -151,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     public void openAddCourseScreen() {
         openAddCourseFragment();
     }
+
 
     @Override
     public void addDataToDataBase(String title, String className, String section) {
