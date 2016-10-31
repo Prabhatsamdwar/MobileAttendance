@@ -1,10 +1,13 @@
-package com.example.tung.mobileattendance;
+package com.example.tung.mobileattendance.adapters;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.example.tung.mobileattendance.R;
+import com.example.tung.mobileattendance.models.Student;
 
 import java.util.List;
 
@@ -24,7 +27,7 @@ public class StudentListAdapter extends RecyclerView.Adapter<StudentListAdapter.
     @Override
     public ListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.list_item, parent, false);
+                .inflate(R.layout.student_list_item, parent, false);
         return new ListViewHolder(itemView);
     }
 

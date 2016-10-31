@@ -1,9 +1,10 @@
-package com.example.tung.mobileattendance;
+package com.example.tung.mobileattendance.fragments;
 
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -16,22 +17,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.example.tung.mobileattendance.R;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link SignupFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link SignupFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class SignupFragment extends Fragment {
+
+public class SignUpFragment extends Fragment {
 
     private Button button;
 
     private OnFragmentInteractionListener mListener;
 
-    public SignupFragment() {
+    public SignUpFragment() {
         // Required empty public constructor
     }
 
@@ -45,10 +40,16 @@ public class SignupFragment extends Fragment {
 
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionBar.setTitle("Sign Up");
+        actionBar.setHomeAsUpIndicator(R.mipmap.ic_arrow_back_white_18dp);
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setHomeButtonEnabled(true);
         button= (Button)view.findViewById(R.id.sign_button);
-        final EditText usernameEditText= (EditText) view.findViewById(R.id.username1_layout);
-        final EditText emailEditText= (EditText) view.findViewById(R.id.email_layout);
-        final EditText passwordEditText= (EditText) view.findViewById(R.id.password_layout);
+        final android.support.design.widget.TextInputEditText usernameEditText= (android.support.design.widget.TextInputEditText) view.findViewById(R.id.username1_layout);
+        final android.support.design.widget.TextInputEditText emailEditText= (android.support.design.widget.TextInputEditText) view.findViewById(R.id.email_layout);
+        final android.support.design.widget.TextInputEditText passwordEditText= (android.support.design.widget.TextInputEditText) view.findViewById(R.id.password_layout);
+        final TextInputLayout textInputLayoutUserName = (TextInputLayout) view.findViewById(R.id.username_layout);
+        final TextInputLayout textInputLayoutEmail = (TextInputLayout) view.findViewById(R.id.email_input_layout);
+        final TextInputLayout textInputLayoutPassword = (TextInputLayout) view.findViewById(R.id.password_input_layout);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,16 +59,22 @@ public class SignupFragment extends Fragment {
                 String password=passwordEditText.getText().toString();
 
                 if(TextUtils.isEmpty(username)){
-                    usernameEditText.setError("username name can't be empty !");
+                    textInputLayoutUserName.setError("Username can't be empty !");
                     return;
+                }else{
+                    textInputLayoutUserName.setErrorEnabled(false);
                 }
                 if(TextUtils.isEmpty(email)){
-                    emailEditText.setError(" email id can't be empty !");
+                    textInputLayoutEmail.setError("E-mail id can't be empty !");
                     return;
+                }else {
+                    textInputLayoutEmail.setErrorEnabled(false);
                 }
                 if(TextUtils.isEmpty(password)){
-                    passwordEditText.setError("password name can't be empty !");
+                    textInputLayoutPassword.setError("Password can't be empty !");
                     return;
+                }else {
+                    textInputLayoutPassword.setErrorEnabled(false);
                 }
                 Log.d("button","login added");
                 mListener.addNewUserToDataBase(username,email,password);

@@ -2,15 +2,12 @@ package com.example.tung.mobileattendance;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.database.Cursor;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 
-
-import java.util.ArrayList;
-import java.util.List;
+import com.example.tung.mobileattendance.models.Student;
 
 
 /**

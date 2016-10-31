@@ -1,4 +1,4 @@
-package com.example.tung.mobileattendance;
+package com.example.tung.mobileattendance.models;
 
 /**
  * Created by tung on 10/10/16.

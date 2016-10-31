@@ -19,9 +19,23 @@
         android:layout_height="match_parent"
         android:layout_below="@id/card_view_separator"
         android:layout_gravity="center"
-        card_view:cardCornerRadius="0dp"
-        card_view:cardElevation="0dp">
-
+        android:layout_margin="8dp"
+        card_view:cardCornerRadius="3dp"
+        card_view:cardElevation="6dp">
+        <LinearLayout
+            android:id="@+id/no_course_view"
+            android:layout_width="match_parent"
+            android:gravity="center_horizontal|center_vertical"
+            android:visibility="gone"
+            android:layout_height="match_parent">
+            <TextView
+                android:id="@+id/no_course"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textColor="@color/colorAccent"
+                android:text="No Course ? Please add new one !"/>
+        </LinearLayout>
         <android.support.v7.widget.RecyclerView
             android:id="@+id/all_notes_list"
             android:layout_width="match_parent"
@@ -30,15 +44,16 @@
             android:layout_alignParentTop="true" />
 
     </android.support.v7.widget.CardView>
+
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:src="@drawable/ic_add_white_24dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_marginBottom="24dp"
-        android:layout_marginRight="24dp"/>
+        android:layout_alignParentEnd="true"
+        android:layout_gravity="bottom|end"
+        android:layout_marginBottom="16dp"
+        android:layout_marginEnd="16dp"
+        android:src="@drawable/ic_add_white_24dp" />
 
 </RelativeLayout>

@@ -1,9 +1,10 @@
-package com.example.tung.mobileattendance;
+package com.example.tung.mobileattendance.fragments;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -14,7 +15,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.TextView;
+
+import com.example.tung.mobileattendance.R;
 
 
 public class AddCourseFragment extends Fragment {
@@ -41,9 +43,8 @@ public class AddCourseFragment extends Fragment {
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
 
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
-        actionBar.setTitle("Courses");
-        actionBar.setHomeAsUpIndicator(R.drawable.ic_navigate_before_white_18dp);
-
+        actionBar.setTitle("Add New Course");
+        actionBar.setHomeAsUpIndicator(R.mipmap.ic_arrow_back_white_18dp);
         actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setHomeButtonEnabled(true);
 
@@ -51,7 +52,9 @@ public class AddCourseFragment extends Fragment {
         final EditText courseEditText = (EditText) view.findViewById(R.id.course_edit_text);
         final EditText classEditText = (EditText) view.findViewById(R.id.class_edit_text);
         final EditText sectionEditText = (EditText) view.findViewById(R.id.section_edit_text);
-
+        final TextInputLayout textInputEditTextCourse = (TextInputLayout) view.findViewById(R.id.course_input_layout);
+        final TextInputLayout textInputEditTextClass = (TextInputLayout) view.findViewById(R.id.class_input_layout);
+        final TextInputLayout textInputEditTextSection = (TextInputLayout) view.findViewById(R.id.section_input_layout);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -60,16 +63,25 @@ public class AddCourseFragment extends Fragment {
                 String sectionName = sectionEditText.getText().toString();
 
                 if (TextUtils.isEmpty(courseName)) {
-                    courseEditText.setError("Course name can't be empty !");
+                    textInputEditTextCourse.setError("Course name can't be empty !");
                     return;
+                }else{
+                    textInputEditTextCourse.setError(null);
+                    textInputEditTextCourse.setErrorEnabled(false);
                 }
                 if (TextUtils.isEmpty(className)) {
-                    classEditText.setError("Class name can't be empty !");
+                    textInputEditTextClass.setError("Class name can't be empty !");
                     return;
+                }else{
+                    textInputEditTextClass.setError(null);
+                    textInputEditTextClass.setErrorEnabled(false);
                 }
                 if (TextUtils.isEmpty(sectionName)) {
-                    sectionEditText.setError("Section name can't be empty !");
+                    textInputEditTextSection.setError("Section name can't be empty !");
                     return;
+                }else {
+                    textInputEditTextSection.setError(null);
+                    textInputEditTextSection.setErrorEnabled(false);
                 }
                 Log.d("Fab", "course added");
                 getFragmentManager().popBackStack();
@@ -81,12 +93,6 @@ public class AddCourseFragment extends Fragment {
 
     }
 
-    /*// TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }*/
 
     @Override
     public void onAttach(Context context) {

@@ -1,6 +1,5 @@
 <resources>
-    <string name="app_name">MobileAttendance</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="app_name">Class Roll</string>
+    <string name="done">Save</string>
+    <string name="event">Date</string>
 </resources>

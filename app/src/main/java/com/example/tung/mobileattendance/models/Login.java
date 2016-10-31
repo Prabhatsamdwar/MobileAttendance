@@ -1,4 +1,4 @@
-package com.example.tung.mobileattendance;
+package com.example.tung.mobileattendance.models;
 
 import java.io.Serializable;
 

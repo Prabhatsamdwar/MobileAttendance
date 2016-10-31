@@ -1,34 +1,34 @@
-package com.example.tung.mobileattendance;
+package com.example.tung.mobileattendance.fragments;
 
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.tung.mobileattendance.DataBaseHelper;
+import com.example.tung.mobileattendance.R;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link LoginFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link LoginFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class LoginFragment extends Fragment {
     private Button loginButton;
     private DataBaseHelper dataBaseHelperLogin;
     private OnFragmentInteractionListener mListener;
     private TextView signUpTextView;
+    private android.support.design.widget.TextInputEditText userNameEditText;
+    private android.support.design.widget.TextInputEditText passwordEditText;
+    private TextInputLayout textInputLayoutUserName;
+    private TextInputLayout textInputLayoutPassword;
+
     public LoginFragment() {
         // Required empty public constructor
     }
@@ -48,20 +48,37 @@ public class LoginFragment extends Fragment {
 
 
         loginButton = (Button) view.findViewById(R.id.Login_button);
-        final EditText userNameEditText = (EditText) view.findViewById(R.id.login_username);
-        final EditText passwordEditText = (EditText) view.findViewById(R.id.login_password);
+        userNameEditText = (android.support.design.widget.TextInputEditText) view.findViewById(R.id.login_username);
+        passwordEditText = (android.support.design.widget.TextInputEditText) view.findViewById(R.id.login_password);
         signUpTextView = (TextView) view.findViewById(R.id.sign_up_textView);
-        dataBaseHelperLogin =  new DataBaseHelper(getActivity());
+        textInputLayoutUserName = (TextInputLayout) view.findViewById(R.id.username_layout);
+        textInputLayoutPassword = (TextInputLayout) view.findViewById(R.id.password_layout);
+        dataBaseHelperLogin = new DataBaseHelper(getActivity());
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String login_username = userNameEditText.getText().toString();
+                String loginUserName = userNameEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
+                if (TextUtils.isEmpty(loginUserName)) {
+                    textInputLayoutUserName.setError("Username can't be empty !");
+                    return;
+                }else{
+                    textInputLayoutUserName.setError(null);
+                    textInputLayoutUserName.setErrorEnabled(false);
+                }
+                if (TextUtils.isEmpty(password)) {
+                    textInputLayoutPassword.setError("Password can't be empty !");
+                    return;
+                }else{
+                    textInputLayoutUserName.setError(null);
+                    textInputLayoutUserName.setErrorEnabled(false);
+                }
 
-                boolean isValidUser = dataBaseHelperLogin.getLogin(login_username, password);
+                boolean isValidUser = dataBaseHelperLogin.getLogin(loginUserName, password);
                 if (isValidUser == true) {
+                    getFragmentManager().popBackStack();
                     mListener.onSuccessOpenHomescreen();
-                }else {
+                } else {
                     Toast.makeText(getActivity(), "Either your username or password is wrong", Toast.LENGTH_LONG).show();
                 }
 

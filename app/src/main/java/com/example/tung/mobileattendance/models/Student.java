@@ -1,4 +1,4 @@
-package com.example.tung.mobileattendance;
+package com.example.tung.mobileattendance.models;
 
 import java.io.Serializable;
 
@@ -9,8 +9,9 @@ import java.io.Serializable;
 public class Student implements Serializable {
     private int id;
     private String studentName;
-    private  String rollNo;
+    private String rollNo;
     private String contact;
+    private int courseId;
 
 
     public int getId() {
@@ -43,5 +44,13 @@ public class Student implements Serializable {
 
     public void setContact(String contact) {
         this.contact = contact;
+    }
+
+    public int getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(int courseId) {
+        this.courseId = courseId;
     }
 }

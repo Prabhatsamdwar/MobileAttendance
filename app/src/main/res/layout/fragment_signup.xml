@@ -3,117 +3,116 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#e43f3f"
-    tools:context="com.example.tung.mobileattendance.LoginFragment">
+    tools:context="com.example.tung.mobileattendance.fragments.LoginFragment">
 
-    <!-- TODO: Update blank fragment layout -->
-
-
-
-    <LinearLayout
+    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/card_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp">
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:layout_margin="16dp"
+        android:background="#fafaff"
+        card_view:cardCornerRadius="7dp">
 
-        <android.support.design.widget.TextInputLayout
-
-            android:layout_width="match_parent"
-            android:theme="@style/EditTextHint"
-            android:layout_height="wrap_content">
-
-            <EditText
-                android:id="@+id/username1_layout"
-                android:textColor="#FFFFFF"
-                android:layout_marginLeft="32dp"
-                android:layout_marginRight="32dp"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:hint="Username"
-                android:layout_weight="0.5" />
-        </android.support.design.widget.TextInputLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp">
-
-        <android.support.design.widget.TextInputLayout
-
-            android:layout_width="match_parent"
-            android:theme="@style/EditTextHint"
-            android:layout_height="wrap_content">
-
-            <EditText
-                android:id="@+id/email_layout"
-                android:textColor="#FFFFFF"
-                android:layout_marginLeft="32dp"
-                android:layout_marginRight="32dp"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:hint="Email"
-                android:inputType="textEmailAddress"
-                android:layout_weight="0.5" />
-        </android.support.design.widget.TextInputLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp">
-
-
-
-        <android.support.design.widget.TextInputLayout
-            android:theme="@style/EditTextHint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <EditText
-                android:id="@+id/password_layout"
-
-                android:textColor="#FFFFFF"
-                android:layout_marginLeft="32dp"
-                android:layout_marginRight="32dp"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="right"
-                android:hint="Password"
-                android:textColorHint="#FFFFFF"
-                android:layout_weight="0.5"
-                android:inputType="textPassword" />
-        </android.support.design.widget.TextInputLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:orientation="vertical">
-
-        <Button
-            android:id="@+id/sign_button"
-
-            android:layout_marginLeft="32dp"
-            android:layout_marginRight="32dp"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="#FFFFFF"
-            android:text="SIGNUP"
-            android:background="@color/cardview_dark_background"
-            />
+            android:layout_gravity="center"
+            android:orientation="vertical">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp">
 
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/username_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="32dp"
+                    android:layout_marginRight="32dp"
+                    android:theme="@style/EditTextHint">
 
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/username1_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:layout_weight="0.5"
+                        android:hint="Username"
+                        android:textColor="#001426" />
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp">
 
-    </LinearLayout>
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/email_input_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="32dp"
+                    android:layout_marginRight="32dp"
+                    android:theme="@style/EditTextHint">
 
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/email_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:layout_weight="0.5"
+                        android:hint="Email"
+                        android:inputType="textEmailAddress"
+                        android:textColor="#001426" />
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp">
 
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/password_input_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="32dp"
+                    android:layout_marginRight="32dp"
+                    android:theme="@style/EditTextHint">
 
+                    <android.support.design.widget.TextInputEditText
+                        android:id="@+id/password_layout"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="right"
+                        android:layout_weight="0.5"
+                        android:hint="Password"
+                        android:inputType="textPassword"
+                        android:textColor="#001426" />
+                </android.support.design.widget.TextInputLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <Button
+                    android:id="@+id/sign_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="32dp"
+                    android:layout_marginRight="32dp"
+                    android:background="@color/colorPrimaryDark"
+                    android:text="SIGNUP"
+                    android:textColor="#FAFAFA" />
+            </LinearLayout>
+        </LinearLayout>
+    </android.support.v7.widget.CardView>
 </LinearLayout>
 
 

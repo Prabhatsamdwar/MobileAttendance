@@ -6,7 +6,12 @@ import android.database.Cursor;
 import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
+
+import com.example.tung.mobileattendance.models.Course;
+import com.example.tung.mobileattendance.models.Login;
+import com.example.tung.mobileattendance.models.Student;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,10 +40,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     //Column Name
     private static final String STUDENT_TABLE = "student";
 
-    private static final String STUDENT_ID="id";
-    private static final String STUDENT_NAME="studentName";
-    private static final String ROLL_NO="rollno";
-    private static final String CONTACT="contact";
+    private static final String STUDENT_ID = "id";
+    private static final String STUDENT_NAME = "studentName";
+    private static final String ROLL_NO = "rollno";
+    private static final String CONTACT = "contact";
 
 
     private static final String CREATE_LOGIN_TABLE = "CREATE TABLE " +
@@ -47,9 +52,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_COURSE_TABLE = "CREATE TABLE " +
             COURSE_TABLE + "( " + COURSE_ID + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COURSE_TITLE + " TEXT, " + COURSE_CLASS + " TEXT, " + COURSE_SECTION + " TEXT)";
 
-    private static final String CREATE_STUDENT_TABLE="CREATE TABLE" + STUDENT_TABLE + "( " + STUDENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + STUDENT_NAME + " TEXT, " + ROLL_NO + " TEXT, " + CONTACT + " TEXT)";
-
-
+    private static final String CREATE_STUDENT_TABLE = "CREATE TABLE " + STUDENT_TABLE + " ( " + STUDENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + STUDENT_NAME + " TEXT, " + ROLL_NO + " TEXT, " + CONTACT + " TEXT" + ", " + "course_id" + " INTEGER)";
 
 
     public DataBaseHelper(Context context) {
@@ -87,21 +90,21 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
-    public long createStudent(Student student)
-    {
-        SQLiteDatabase sqLiteDatabase=this.getWritableDatabase();
-        ContentValues contentValues=new ContentValues();
-        contentValues.put(STUDENT_NAME,student.getStudentName());
-        contentValues.put(ROLL_NO,student.getRollNo());
+    public long createStudent(Student student) {
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(STUDENT_NAME, student.getStudentName());
+        contentValues.put(ROLL_NO, student.getRollNo());
         contentValues.put(CONTACT, student.getContact());
-
-        long id = sqLiteDatabase.insert(STUDENT_TABLE,null,contentValues);
-        return  id;
+        contentValues.put("course_id", student.getCourseId());
+        long id = sqLiteDatabase.insert(STUDENT_TABLE, null, contentValues);
+        return id;
     }
 
-    public Course getCourse(long id) {
+    public Course getCourse(long courseId) {
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
-        String selectQuery = "SELECT * FROM " + COURSE_TABLE + " WHERE id = " + id;
+        String selectQuery = "SELECT * FROM " + COURSE_TABLE + " WHERE id = " + courseId;
+        Log.d("DBQuery",selectQuery);
         Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
         if (cursor != null) cursor.moveToFirst();
         Course course = new Course();
@@ -112,9 +115,8 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return course;
     }
 
-    public Student getStudent(long id)
-    {
-        SQLiteDatabase sqLiteDatabase= this.getReadableDatabase();
+    public Student getStudent(long id) {
+        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
         String selectQuery = "SELECT * FROM " + COURSE_TABLE + " WHERE id = " + id;
         Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
         if (cursor != null) cursor.moveToFirst();
@@ -190,6 +192,29 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return studentList;
     }
 
+    public List<Student> getStudentByCourse(int courseId) {
+        List<Student> studentList = new ArrayList<Student>();
+        String selectQuery = "SELECT  * FROM " + STUDENT_TABLE + " where course_id = "+ courseId;
+        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+
+        // looping through all rows and adding to list
+        if (cursor.moveToFirst()) {
+            do {
+                Student student = new Student();
+                student.setId(cursor.getInt((cursor.getColumnIndex(STUDENT_ID))));
+                student.setStudentName(cursor.getString(cursor.getColumnIndex(STUDENT_NAME)));
+                student.setRollNo(cursor.getString(cursor.getColumnIndex(ROLL_NO)));
+                student.setContact(cursor.getString(cursor.getColumnIndex(CONTACT)));
+
+
+                // adding to notesArrayList list
+                studentList.add(student);
+            } while (cursor.moveToNext());
+        }
+        return studentList;
+    }
+
 
     /*public void deleteNote(int id) {
 
@@ -212,9 +237,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     public boolean getLogin(String userName, String password) {
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
-        String selectQuery = "SELECT * FROM " + LOGIN_TABLE + " WHERE  " + LOGIN_USERNAME + " = '" + userName + "' AND  " + LOGIN_PASSWORD + "  =  '" + password+"'";
+        String selectQuery = "SELECT * FROM " + LOGIN_TABLE + " WHERE  " + LOGIN_USERNAME + " = '" + userName + "' AND  " + LOGIN_PASSWORD + "  =  '" + password + "'";
         Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
-        if (cursor.getCount()>0)
+        if (cursor.getCount() > 0)
             return true;
         else
             return false;

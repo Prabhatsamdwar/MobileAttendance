@@ -7,18 +7,35 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 
+import com.example.tung.mobileattendance.fragments.AddCourseFragment;
+import com.example.tung.mobileattendance.fragments.AddStudentFragment;
+import com.example.tung.mobileattendance.fragments.EnrollStudentFragment;
+import com.example.tung.mobileattendance.fragments.HomeFragment;
+import com.example.tung.mobileattendance.fragments.LoginFragment;
+import com.example.tung.mobileattendance.fragments.SignUpFragment;
+import com.example.tung.mobileattendance.fragments.StudentListFragment;
+import com.example.tung.mobileattendance.models.Course;
+import com.example.tung.mobileattendance.models.CourseList;
+import com.example.tung.mobileattendance.models.Login;
+import com.example.tung.mobileattendance.models.Student;
+import com.example.tung.mobileattendance.models.StudentList;
+
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener, LoginFragment.OnFragmentInteractionListener,StudentListFragment.OnFragmentInteractionListener, AddStudentFragment.OnFragmentInteractionListener, EnrollStudentFragment.OnFragmentInteractionListener, SignupFragment.OnFragmentInteractionListener, HomeFragment.OnFragmentInteractionListener, AddCourseFragment.OnFragmentInteractionListener {
+import static com.example.tung.mobileattendance.constants.Constant.COURSE_ID;
+import static com.example.tung.mobileattendance.constants.Constant.COURSE_NAME;
+import static com.example.tung.mobileattendance.constants.Constant.LIST_OF_STUDENTS;
+
+public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener, LoginFragment.OnFragmentInteractionListener, StudentListFragment.OnFragmentInteractionListener, AddStudentFragment.OnFragmentInteractionListener, EnrollStudentFragment.OnFragmentInteractionListener, SignUpFragment.OnFragmentInteractionListener, HomeFragment.OnFragmentInteractionListener, AddCourseFragment.OnFragmentInteractionListener {
     LoginFragment loginFragment;
     HomeFragment homeFragment;
     AddCourseFragment addCourseFragment;
-    SignupFragment singupFragment;
+    SignUpFragment singUpFragment;
     StudentListFragment studentListFragment;
     EnrollStudentFragment enrollStudentFragment;
     AddStudentFragment addStudentFragment;
     private DataBaseHelper dataBaseHelper;
-    private Toolbar toolbar;
+    private Toolbar toolBar;
 
 
     @Override
@@ -26,25 +43,27 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        toolBar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolBar);
         getSupportActionBar().setTitle("Mobile Attendance");
-
-        //openLoginFragment();
-//        openAddCourseFragment();
-//        openSignupFragment();
-//          openEnrollStudentFragment();
-        openAddStudentFragment();
         dataBaseHelper = new DataBaseHelper(getApplicationContext());
 
-//         List<Course> courseList = dataBaseHelper.getAllCourse();
+        openLoginFragment();
+//        openAddCourseFragment();
+//        openSignUpFragment();
+//          openEnrollStudentFragment();
+//        openAddStudentFragment();
 
-//         openHomeFragment(courseList);
- // openAddStudentFragment();
-  //  openAddStudentScreen();
+/*
+        List<Course> courseList = dataBaseHelper.getAllCourse();
 
-  //      List<Student> studentList = dataBaseHelper.getAllStudent();
-//openStudentListFragment(studentList);
+        openHomeFragment(courseList);
+*/
+        // openAddStudentFragment();
+        //  openAddStudentScreen();
+
+//        List<Student> studentList = dataBaseHelper.getAllStudent();
+//        openStudentListFragment(studentList);
 
     }
 
@@ -53,30 +72,20 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
         enrollStudentFragment = new EnrollStudentFragment();
-
+        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
         fragmentTransaction.replace(R.id.fragment, enrollStudentFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
 
     }
 
-    private void openAddStudentFragment() {
+
+    private void openSignUpFragment() {
         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
-        addStudentFragment = new AddStudentFragment();
-
-        fragmentTransaction.replace(R.id.fragment, addStudentFragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
-
-    }
-
-    private void openSignupFragment() {
-        android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
-        android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
-        singupFragment = new SignupFragment();
-
-        fragmentTransaction.replace(R.id.fragment, singupFragment);
+        singUpFragment = new SignUpFragment();
+        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
+        fragmentTransaction.replace(R.id.fragment, singUpFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
 
@@ -86,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
         loginFragment = new LoginFragment();
-
+        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
         fragmentTransaction.replace(R.id.fragment, loginFragment);
         fragmentTransaction.commit();
 
@@ -98,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
         Bundle bundle = new Bundle();
         CourseList listOfCourse = new CourseList();
         listOfCourse.setCourseList(courseList);
@@ -105,8 +115,25 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         homeFragment = new HomeFragment();
         homeFragment.setArguments(bundle);
         fragmentTransaction.replace(R.id.fragment, homeFragment);
-        supportFragmentManager.popBackStack();
+        fragmentTransaction.addToBackStack(null);
 
+//        supportFragmentManager.popBackStack();
+
+        fragmentTransaction.commit();
+
+    }
+
+    private void openAddStudentFragment(int courseId, String title) {
+        android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+        android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
+        addStudentFragment = new AddStudentFragment();
+        Bundle bundle = new Bundle();
+        bundle.putInt(COURSE_ID, courseId);
+        bundle.putString(COURSE_NAME, title);
+        addStudentFragment.setArguments(bundle);
+        fragmentTransaction.replace(R.id.fragment, addStudentFragment);
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
 
     }
@@ -115,7 +142,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
         addCourseFragment = new AddCourseFragment();
-
+        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
         fragmentTransaction.replace(R.id.fragment, addCourseFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
@@ -129,44 +156,47 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     }
 
     @Override
-    public void openAddStudentScreen() {
-
+    public void openAddStudentScreen(int courseId, String title) {
+        Log.d("MainActivity", "openAddStudentScreen()");
         dataBaseHelper = new DataBaseHelper(getApplicationContext());
-
         List<Student> studentList = dataBaseHelper.getAllStudent();
-
-        openStudentListFragment(studentList);
+        openAddStudentFragment(courseId, title);
 
     }
 
+    @Override
+    public void getAllStudentByDate(int day, int month, int year) {
+        Log.d("MainActivity", "Date is : " + day + "-" + month + "-" + year);
+    }
 
-    private void openStudentListFragment(List<Student> studentList) {
+
+    private void openStudentListFragment(List<Student> studentList, Course course) {
 
         /*Get all data from DB and pass to HomeFragment*/
-
         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
-        Bundle bundle1 = new Bundle();
+        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
+        Bundle bundle = new Bundle();
         StudentList listOfStudent = new StudentList();
         listOfStudent.setStudentList(studentList);
-        bundle1.putSerializable("List_of_Student", listOfStudent);
+        bundle.putSerializable(LIST_OF_STUDENTS, listOfStudent);
+        bundle.putString(COURSE_NAME, course.getTitle());
+        bundle.putInt(COURSE_ID, course.getId());
         studentListFragment = new StudentListFragment();
-        studentListFragment.setArguments(bundle1);
+        studentListFragment.setArguments(bundle);
         fragmentTransaction.replace(R.id.fragment, studentListFragment);
-        supportFragmentManager.popBackStack();
-
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
-
     }
-
 
 
     @Override
-    public void studentAddDataToDatabase(String studentName, String rollNo, String contact) {
+    public void studentAddDataToDatabase(String studentName, String rollNo, String contact, int courseId) {
         Student student = new Student();
         student.setStudentName(studentName);
         student.setRollNo(rollNo);
         student.setContact(contact);
+        student.setCourseId(courseId);
         dataBaseHelper.createStudent(student);
         Log.d("MainActivity", "Save Data in DB");
         List<Student> studentList = dataBaseHelper.getAllStudent();
@@ -187,7 +217,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
 
     @Override
     public void openSignUpScreen() {
-        openSignupFragment();
+        openSignUpFragment();
     }
 
     @Override
@@ -204,6 +234,15 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     @Override
     public void openAddCourseScreen() {
         openAddCourseFragment();
+    }
+
+    @Override
+    public void onCourseItemClick(int courseId) {
+        Log.d("HomeFragment", "CourseId = " + courseId);
+        dataBaseHelper = new DataBaseHelper(getApplicationContext());
+        List<Student> studentList = dataBaseHelper.getStudentByCourse(courseId);
+        Course course = dataBaseHelper.getCourse(courseId);
+        openStudentListFragment(studentList, course);
     }
 
 

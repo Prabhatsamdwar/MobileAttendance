@@ -1,4 +1,4 @@
-package com.example.tung.mobileattendance;
+package com.example.tung.mobileattendance.fragments;
 
 import android.content.Context;
 import android.net.Uri;
@@ -11,15 +11,22 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.example.tung.mobileattendance.adapters.HomeListAdapter;
+import com.example.tung.mobileattendance.OnListItemClickListener;
+import com.example.tung.mobileattendance.R;
+import com.example.tung.mobileattendance.models.Course;
+import com.example.tung.mobileattendance.models.CourseList;
+
 import java.util.List;
 
 
-public class HomeFragment extends Fragment {
-    private CourseList course;
+public class HomeFragment extends Fragment implements OnListItemClickListener {
+    private CourseList courses;
     private FloatingActionButton floatingActionButton;
 
 
@@ -58,12 +65,16 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        course = (CourseList) getArguments().getSerializable("List_of_Course");
-
+        final View noCourseView = view.findViewById(R.id.no_course_view);
+        courses = (CourseList) getArguments().getSerializable("List_of_Course");
+        if (courses != null && courses.getCourseList().size() < 1) {
+            noCourseView.setVisibility(View.VISIBLE);
+        }
  /*Init recycler view*/
         recyclerView = (RecyclerView) view.findViewById(R.id.all_notes_list);
         homeListAdapter = new HomeListAdapter();
-        homeListAdapter.setCourseList(course.getCourseList());
+        homeListAdapter.setOnListItemClickListener(this);
+        homeListAdapter.setCourseList(courses.getCourseList());
 
         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         recyclerView.setLayoutManager(mLayoutManager);
@@ -74,7 +85,7 @@ public class HomeFragment extends Fragment {
     }
 
     public void refresh(List<Course> courses) {
-        course.setCourseList(courses);
+        this.courses.setCourseList(courses);
         homeListAdapter.notifyDataSetChanged();
     }
 
@@ -102,6 +113,12 @@ public class HomeFragment extends Fragment {
         mListener = null;
     }
 
+    @Override
+    public void onListItemClick(View view, int courseId) {
+        Log.d("HomeFragment", "CourseId = " + courseId);
+        mListener.onCourseItemClick(courseId);
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -117,6 +134,8 @@ public class HomeFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
 
         void openAddCourseScreen();
+
+        void onCourseItemClick(int courseId);
 
     }
 }
