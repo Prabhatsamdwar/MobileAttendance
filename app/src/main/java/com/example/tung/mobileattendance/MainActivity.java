@@ -1,11 +1,15 @@
 package com.example.tung.mobileattendance;
 
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.example.tung.mobileattendance.fragments.AddCourseFragment;
 import com.example.tung.mobileattendance.fragments.AddStudentFragment;
@@ -19,6 +23,7 @@ import com.example.tung.mobileattendance.models.CourseList;
 import com.example.tung.mobileattendance.models.Login;
 import com.example.tung.mobileattendance.models.Student;
 import com.example.tung.mobileattendance.models.StudentList;
+import com.example.tung.mobileattendance.utils.Utils;
 
 import java.util.List;
 
@@ -36,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     AddStudentFragment addStudentFragment;
     private DataBaseHelper dataBaseHelper;
     private Toolbar toolBar;
+    private ProgressDialog progressDialog;
+    private Context context;
 
 
     @Override
@@ -47,18 +54,17 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         setSupportActionBar(toolBar);
         getSupportActionBar().setTitle("Mobile Attendance");
         dataBaseHelper = new DataBaseHelper(getApplicationContext());
-
-        openLoginFragment();
+        progressDialog = new ProgressDialog(this);
+        context = this;
+//        openLoginFragment();
 //        openAddCourseFragment();
 //        openSignUpFragment();
 //          openEnrollStudentFragment();
 //        openAddStudentFragment();
 
-/*
         List<Course> courseList = dataBaseHelper.getAllCourse();
 
         openHomeFragment(courseList);
-*/
         // openAddStudentFragment();
         //  openAddStudentScreen();
 
@@ -165,8 +171,33 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     }
 
     @Override
-    public void getAllStudentByDate(int day, int month, int year) {
-        Log.d("MainActivity", "Date is : " + day + "-" + month + "-" + year);
+    public void getAllStudentByDate(int day, int month, int year, int courseId) {
+        String currentDate = Utils.getDateTime(year, month, day);
+        List<Student> studentList = dataBaseHelper.getStudentByCourse(courseId, currentDate);
+        Course course = dataBaseHelper.getCourse(courseId);
+        studentListFragment.refresh(studentList);
+//        openStudentListFragment(studentList, course);
+    }
+
+    @Override
+    public void setAttendanceForTheDay(List<Student> studentList) {
+        progressDialog.setMessage("Updating Records ...");
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setIndeterminate(true);
+        progressDialog.show();
+        for (Student student : studentList) {
+            dataBaseHelper.updateAttendanceForTheDay(student);
+        }
+
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                progressDialog.dismiss();
+                Toast.makeText(context, "Records Updated Successfully !", Toast.LENGTH_SHORT).show();
+            }
+        }, 700);
     }
 
 
@@ -200,8 +231,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
         dataBaseHelper.createStudent(student);
         Log.d("MainActivity", "Save Data in DB");
         List<Student> studentList = dataBaseHelper.getAllStudent();
-        shouldDisplayHomeUp();
-        StudentListFragment.refresh(studentList);
+//        shouldDisplayHomeUp();
+        studentListFragment.refresh(studentList);
 
     }
 
@@ -240,7 +271,8 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     public void onCourseItemClick(int courseId) {
         Log.d("HomeFragment", "CourseId = " + courseId);
         dataBaseHelper = new DataBaseHelper(getApplicationContext());
-        List<Student> studentList = dataBaseHelper.getStudentByCourse(courseId);
+        String currentDate = Utils.getDateTime();
+        List<Student> studentList = dataBaseHelper.getStudentByCourse(courseId, currentDate);
         Course course = dataBaseHelper.getCourse(courseId);
         openStudentListFragment(studentList, course);
     }

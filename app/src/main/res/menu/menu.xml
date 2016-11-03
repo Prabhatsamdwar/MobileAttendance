@@ -2,6 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/print_action"
+        android:title="@string/print"
+        android:icon="@mipmap/ic_print_white_18dp"
+        app:showAsAction="always">
+    </item>
+    <item
         android:id="@+id/event_action"
         android:title="@string/event"
         android:icon="@mipmap/ic_event_white_18dp"

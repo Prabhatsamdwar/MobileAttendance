@@ -8,10 +8,10 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-
 import com.example.tung.mobileattendance.models.Course;
 import com.example.tung.mobileattendance.models.Login;
 import com.example.tung.mobileattendance.models.Student;
+import com.example.tung.mobileattendance.utils.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +44,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     private static final String STUDENT_NAME = "studentName";
     private static final String ROLL_NO = "rollno";
     private static final String CONTACT = "contact";
+    public static final String IS_PRESENT = "is_present";
+    public static final String IS_LEAVE = "is_leave";
+    public static final String IS_ABSENT = "is_absent";
 
 
     private static final String CREATE_LOGIN_TABLE = "CREATE TABLE " +
@@ -52,7 +55,9 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     private static final String CREATE_COURSE_TABLE = "CREATE TABLE " +
             COURSE_TABLE + "( " + COURSE_ID + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COURSE_TITLE + " TEXT, " + COURSE_CLASS + " TEXT, " + COURSE_SECTION + " TEXT)";
 
-    private static final String CREATE_STUDENT_TABLE = "CREATE TABLE " + STUDENT_TABLE + " ( " + STUDENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + STUDENT_NAME + " TEXT, " + ROLL_NO + " TEXT, " + CONTACT + " TEXT" + ", " + "course_id" + " INTEGER)";
+    private static final String CREATE_STUDENT_TABLE = "CREATE TABLE " + STUDENT_TABLE + " ( " + STUDENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + STUDENT_NAME + " TEXT, " + ROLL_NO + " TEXT, " + CONTACT + " TEXT" + ", " +
+            "course_id" + " INTEGER, attendance_date DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+            IS_ABSENT + " INTEGER DEFAULT 0, " + IS_PRESENT + " INTEGER DEFAULT 0, " + IS_LEAVE + " INTEGER DEFAULT 0)";
 
 
     public DataBaseHelper(Context context) {
@@ -97,6 +102,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         contentValues.put(ROLL_NO, student.getRollNo());
         contentValues.put(CONTACT, student.getContact());
         contentValues.put("course_id", student.getCourseId());
+        contentValues.put("attendance_date", Utils.getDateTime());
         long id = sqLiteDatabase.insert(STUDENT_TABLE, null, contentValues);
         return id;
     }
@@ -104,7 +110,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
     public Course getCourse(long courseId) {
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
         String selectQuery = "SELECT * FROM " + COURSE_TABLE + " WHERE id = " + courseId;
-        Log.d("DBQuery",selectQuery);
+        Log.d("DBQuery", selectQuery);
         Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
         if (cursor != null) cursor.moveToFirst();
         Course course = new Course();
@@ -192,12 +198,12 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         return studentList;
     }
 
-    public List<Student> getStudentByCourse(int courseId) {
+    public List<Student> getStudentByCourse(int courseId, String currentDate) {
         List<Student> studentList = new ArrayList<Student>();
-        String selectQuery = "SELECT  * FROM " + STUDENT_TABLE + " where course_id = "+ courseId;
+        String selectQuery = "SELECT  * FROM " + STUDENT_TABLE + " where course_id = " + courseId + " and attendance_date = " + currentDate;
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
         Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
-
+        Log.d("Query",selectQuery);
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
             do {
@@ -206,9 +212,11 @@ public class DataBaseHelper extends SQLiteOpenHelper {
                 student.setStudentName(cursor.getString(cursor.getColumnIndex(STUDENT_NAME)));
                 student.setRollNo(cursor.getString(cursor.getColumnIndex(ROLL_NO)));
                 student.setContact(cursor.getString(cursor.getColumnIndex(CONTACT)));
-
-
+                student.setOnLeave(cursor.getInt(cursor.getColumnIndex(IS_LEAVE)) != 0);
+                student.setAbsent(cursor.getInt(cursor.getColumnIndex(IS_ABSENT)) != 0);
+                student.setPresent(cursor.getInt(cursor.getColumnIndex(IS_PRESENT)) != 0);
                 // adding to notesArrayList list
+                Log.d("test", cursor.getString(cursor.getColumnIndex(IS_PRESENT)));
                 studentList.add(student);
             } while (cursor.moveToNext());
         }
@@ -247,4 +255,14 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     }
 
+    public int updateAttendanceForTheDay(Student student) {
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(IS_ABSENT, (student.isAbsent() ? 1 : 0));
+        values.put(IS_PRESENT, (student.isPresent() ? 1 : 0));
+        values.put(IS_LEAVE, (student.isOnLeave() ? 1 : 0));
+
+        return sqLiteDatabase.update(STUDENT_TABLE, values, STUDENT_ID + " = ?", new String[]{String.valueOf(student.getId())});
+    }
 }

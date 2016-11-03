@@ -12,6 +12,9 @@ public class Student implements Serializable {
     private String rollNo;
     private String contact;
     private int courseId;
+    private boolean isOnLeave;
+    private boolean isPresent;
+    private boolean isAbsent;
 
 
     public int getId() {
@@ -52,5 +55,29 @@ public class Student implements Serializable {
 
     public void setCourseId(int courseId) {
         this.courseId = courseId;
+    }
+
+    public boolean isOnLeave() {
+        return isOnLeave;
+    }
+
+    public void setOnLeave(boolean onLeave) {
+        isOnLeave = onLeave;
+    }
+
+    public boolean isPresent() {
+        return isPresent;
+    }
+
+    public void setPresent(boolean present) {
+        isPresent = present;
+    }
+
+    public boolean isAbsent() {
+        return isAbsent;
+    }
+
+    public void setAbsent(boolean absent) {
+        isAbsent = absent;
     }
 }

@@ -2,4 +2,5 @@
     <string name="app_name">Class Roll</string>
     <string name="done">Save</string>
     <string name="event">Date</string>
+    <string name="print">Print</string>
 </resources>

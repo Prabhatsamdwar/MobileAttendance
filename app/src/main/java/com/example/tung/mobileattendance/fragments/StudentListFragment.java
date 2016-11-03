@@ -40,12 +40,11 @@ import static com.example.tung.mobileattendance.constants.Constant.LIST_OF_STUDE
 public class StudentListFragment extends Fragment {
 
 
-    FloatingActionButton floatingActionButton;
+    private FloatingActionButton floatingActionButton;
     private static StudentList studentList;
-
     private RecyclerView recyclerView;
     private static StudentListAdapter studentListAdapter;
-
+    private int courseId;
 
     private OnFragmentInteractionListener mListener;
 
@@ -76,7 +75,7 @@ public class StudentListFragment extends Fragment {
         Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
         final String title = (String) getArguments().get(COURSE_NAME);
-        final int courseId = (int) getArguments().get(COURSE_ID);
+        courseId = (int) getArguments().get(COURSE_ID);
         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
         actionBar.setTitle("Students in " + title);
         actionBar.setHomeAsUpIndicator(R.mipmap.ic_arrow_back_white_18dp);
@@ -97,6 +96,8 @@ public class StudentListFragment extends Fragment {
         if (studentList != null && studentList.getStudentList().size() < 1) {
             /*Display Custom view for add new Student*/
             viewNoStudent.setVisibility(View.VISIBLE);
+        } else {
+            viewNoStudent.setVisibility(View.INVISIBLE);
         }
  /*Init recycler view*/
         recyclerView = (RecyclerView) view.findViewById(R.id.all_student_list);
@@ -135,19 +136,21 @@ public class StudentListFragment extends Fragment {
         mListener = null;
     }
 
-    public static void refresh(List<Student> studentList) {
+    public void refresh(List<Student> studentList) {
         Log.d("StudentListFragment", "refreshing StudentListFragment");
-        StudentListFragment.studentList.setStudentList(studentList);
+        studentListAdapter.setStudentList(studentList);
         studentListAdapter.notifyDataSetChanged();
-
-
     }
 
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+
         void openAddStudentScreen(int courseId, String title);
-        void getAllStudentByDate(int day, int month, int year);
+
+        void getAllStudentByDate(int day, int month, int year, int courseId);
+
+        void setAttendanceForTheDay(List<Student> studentList);
     }
 
     @Override
@@ -159,7 +162,7 @@ public class StudentListFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.done_action) {
-//            showPopUpForDelete(notes);
+            saveAttendance();
             Log.d("Menu", "On Click Done Icon");
             return true;
         }
@@ -168,8 +171,19 @@ public class StudentListFragment extends Fragment {
             Log.d("Menu", "On Click Calender Icon");
             return true;
         }
+        if (id == R.id.print_action) {
+//            showPopUpForDatePicker();
+            Log.d("Menu", "On Click Print Icon");
+            return true;
+        }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void saveAttendance() {
+        List<Student> studentList = studentListAdapter.getStudentList();
+        Log.d("SListFrag", studentList.size() + "");
+        mListener.setAttendanceForTheDay(studentList);
     }
 
     private void showPopUpForDatePicker() {
@@ -200,7 +214,8 @@ public class StudentListFragment extends Fragment {
                 int day = datePicker.getDayOfMonth();
                 int month = datePicker.getMonth() + 1;
                 int year = datePicker.getYear();
-                mListener.getAllStudentByDate(day,month,year);
+                mListener.getAllStudentByDate(day, month, year, courseId);
+//                getFragmentManager().popBackStack();
             }
         });
         dialog.show();

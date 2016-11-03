@@ -1,0 +1,3182 @@
+Index: app/src/main/java/com/example/tung/mobileattendance/HomeListAdapter.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/HomeListAdapter.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/adapters/HomeListAdapter.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,21 +1,26 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.adapters;
+ 
+ import android.support.v7.widget.RecyclerView;
++import android.util.Log;
+ import android.view.LayoutInflater;
+ import android.view.View;
+ import android.view.ViewGroup;
+ import android.widget.TextView;
+ 
++import com.example.tung.mobileattendance.OnListItemClickListener;
++import com.example.tung.mobileattendance.R;
++import com.example.tung.mobileattendance.models.Course;
++
+ import java.util.List;
+ 
+ /**
+  * Created by tung on 10/10/16.
+- *
+  */
+ public class HomeListAdapter extends RecyclerView.Adapter<HomeListAdapter.ListViewHolder> {
+     private static final String TAG = "HomeListAdapter";
+ 
+     private List<Course> courseList;
++    private OnListItemClickListener onListItemClickListener;
+ 
+     public void setCourseList(List<Course> courseList) {
+         this.courseList = courseList;
+@@ -24,29 +29,35 @@
+     @Override
+     public ListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+         View itemView = LayoutInflater.from(parent.getContext())
+-                .inflate(R.layout.list_item, parent, false);
++                .inflate(R.layout.course_list_item, parent, false);
+         return new ListViewHolder(itemView);
+     }
+ 
+ 
+-
+     @Override
+-    public void onBindViewHolder(ListViewHolder holder, int position) {
++    public void onBindViewHolder(ListViewHolder holder, final int position) {
+ 
+         holder.courseName.setText(courseList.get(position).getTitle());
+         holder.className.setText(courseList.get(position).getClassName());
+-
+-
++        holder.itemView.setOnClickListener(new View.OnClickListener() {
++            @Override
++            public void onClick(View view) {
++                Log.d("HomeListAdapter", "onListItemClick HomeList courseId = "+courseList.get(position).getId());
++                onListItemClickListener.onListItemClick(view, courseList.get(position).getId());
+-    }
++            }
++        });
++    }
+ 
+ 
+-
+     @Override
+-    public int getItemCount()
+-    {
++    public int getItemCount() {
+         return courseList.size();
+     }
+ 
++    public void setOnListItemClickListener(OnListItemClickListener onListItemClickListener) {
++        this.onListItemClickListener = onListItemClickListener;
++    }
++
+     public class ListViewHolder extends RecyclerView.ViewHolder {
+         private TextView courseName;
+         private TextView className;
+@@ -57,7 +68,5 @@
+             className = (TextView) itemView.findViewById(R.id.content_text);
+         }
+     }
+-    public interface OnListItemClickListener {
+-        public void onClick(View view, int noteId);
+-    }
++
+ }
+Index: app/src/main/java/com/example/tung/mobileattendance/StudentListAdapter.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/StudentListAdapter.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/adapters/StudentListAdapter.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,4 +1,4 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.adapters;
+ 
+ import android.support.v7.widget.RecyclerView;
+ import android.view.LayoutInflater;
+@@ -6,6 +6,9 @@
+ import android.view.ViewGroup;
+ import android.widget.TextView;
+ 
++import com.example.tung.mobileattendance.R;
++import com.example.tung.mobileattendance.models.Student;
++
+ import java.util.List;
+ 
+ /**
+@@ -24,7 +27,7 @@
+     @Override
+     public ListViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+         View itemView = LayoutInflater.from(parent.getContext())
+-                .inflate(R.layout.list_item, parent, false);
++                .inflate(R.layout.student_list_item, parent, false);
+         return new ListViewHolder(itemView);
+     }
+ 
+Index: app/src/main/java/com/example/tung/mobileattendance/constants/Constant.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/constants/Constant.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/java/com/example/tung/mobileattendance/constants/Constant.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,7 @@
++package com.example.tung.mobileattendance.constants;
++
++public class Constant {
++    public static final String LIST_OF_STUDENTS = "List_of_Student";
++    public static final String COURSE_NAME="CourseName";
++    public static final String COURSE_ID="CourseId";
++}
+Index: app/src/main/java/com/example/tung/mobileattendance/AddCourseFragment.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/AddCourseFragment.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/fragments/AddCourseFragment.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,9 +1,10 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.fragments;
+ 
+ import android.content.Context;
+-import android.net.Uri;
+ import android.os.Bundle;
+ import android.support.design.widget.FloatingActionButton;
++import android.support.design.widget.TextInputEditText;
++import android.support.design.widget.TextInputLayout;
+ import android.support.v4.app.Fragment;
+ import android.support.v7.app.ActionBar;
+ import android.support.v7.app.AppCompatActivity;
+@@ -14,9 +15,10 @@
+ import android.view.View;
+ import android.view.ViewGroup;
+ import android.widget.EditText;
+-import android.widget.TextView;
+ 
++import com.example.tung.mobileattendance.R;
+ 
++
+ public class AddCourseFragment extends Fragment {
+ 
+     private FloatingActionButton floatingActionButton;
+@@ -41,9 +43,8 @@
+         ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
+ 
+         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+-        actionBar.setTitle("Courses");
+-        actionBar.setHomeAsUpIndicator(R.drawable.ic_navigate_before_white_18dp);
+-
++        actionBar.setTitle("Add New Course");
++        actionBar.setHomeAsUpIndicator(R.mipmap.ic_arrow_back_white_18dp);
+         actionBar.setDisplayHomeAsUpEnabled(true);
+         actionBar.setHomeButtonEnabled(true);
+ 
+@@ -51,7 +52,9 @@
+         final EditText courseEditText = (EditText) view.findViewById(R.id.course_edit_text);
+         final EditText classEditText = (EditText) view.findViewById(R.id.class_edit_text);
+         final EditText sectionEditText = (EditText) view.findViewById(R.id.section_edit_text);
+-
++        final TextInputLayout textInputEditTextCourse = (TextInputLayout) view.findViewById(R.id.course_input_layout);
++        final TextInputLayout textInputEditTextClass = (TextInputLayout) view.findViewById(R.id.class_input_layout);
++        final TextInputLayout textInputEditTextSection = (TextInputLayout) view.findViewById(R.id.section_input_layout);
+         floatingActionButton.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View view) {
+@@ -60,16 +63,25 @@
+                 String sectionName = sectionEditText.getText().toString();
+ 
+                 if (TextUtils.isEmpty(courseName)) {
+-                    courseEditText.setError("Course name can't be empty !");
++                    textInputEditTextCourse.setError("Course name can't be empty !");
+                     return;
++                }else{
++                    textInputEditTextCourse.setError(null);
++                    textInputEditTextCourse.setErrorEnabled(false);
+                 }
+                 if (TextUtils.isEmpty(className)) {
+-                    classEditText.setError("Class name can't be empty !");
++                    textInputEditTextClass.setError("Class name can't be empty !");
+                     return;
++                }else{
++                    textInputEditTextClass.setError(null);
++                    textInputEditTextClass.setErrorEnabled(false);
+                 }
+                 if (TextUtils.isEmpty(sectionName)) {
+-                    sectionEditText.setError("Section name can't be empty !");
++                    textInputEditTextSection.setError("Section name can't be empty !");
+                     return;
++                }else {
++                    textInputEditTextSection.setError(null);
++                    textInputEditTextSection.setErrorEnabled(false);
+                 }
+                 Log.d("Fab", "course added");
+                 getFragmentManager().popBackStack();
+@@ -81,12 +93,6 @@
+ 
+     }
+ 
+-    /*// TODO: Rename method, update argument and hook method into UI event
+-    public void onButtonPressed(Uri uri) {
+-        if (mListener != null) {
+-            mListener.onFragmentInteraction(uri);
+-        }
+-    }*/
+ 
+     @Override
+     public void onAttach(Context context) {
+Index: app/src/main/java/com/example/tung/mobileattendance/fragments/AddStudentFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/fragments/AddStudentFragment.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/java/com/example/tung/mobileattendance/fragments/AddStudentFragment.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,127 @@
++package com.example.tung.mobileattendance.fragments;
++
++import android.content.Context;
++import android.net.Uri;
++import android.os.Bundle;
++import android.support.design.widget.FloatingActionButton;
++import android.support.design.widget.TextInputEditText;
++import android.support.design.widget.TextInputLayout;
++import android.support.v4.app.Fragment;
++import android.support.v7.app.ActionBar;
++import android.support.v7.app.AppCompatActivity;
++import android.support.v7.widget.Toolbar;
++import android.text.TextUtils;
++import android.util.Log;
++import android.view.LayoutInflater;
++import android.view.View;
++import android.view.ViewGroup;
++import android.widget.EditText;
++
++import com.example.tung.mobileattendance.R;
++
++import static com.example.tung.mobileattendance.constants.Constant.COURSE_ID;
++import static com.example.tung.mobileattendance.constants.Constant.COURSE_NAME;
++
++
++public class AddStudentFragment extends Fragment {
++
++    private OnFragmentInteractionListener mListener;
++    FloatingActionButton floatingActionButton;
++
++    public AddStudentFragment() {
++        // Required empty public constructor
++    }
++
++
++    @Override
++    public View onCreateView(LayoutInflater inflater, ViewGroup container,
++                             Bundle savedInstanceState) {
++        // Inflate the layout for this fragment
++        View view = inflater.inflate(R.layout.fragment_add_student, container, false);
++        Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
++        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
++        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
++        actionBar.setHomeAsUpIndicator(R.mipmap.ic_arrow_back_white_18dp);
++        actionBar.setDisplayHomeAsUpEnabled(true);
++        actionBar.setHomeButtonEnabled(true);
++
++        final int courseId = (int) getArguments().get(COURSE_ID);
++        final String courseName = (String) getArguments().get(COURSE_NAME);
++        actionBar.setTitle("Add Student in " + courseName);
++
++        floatingActionButton = (FloatingActionButton) view.findViewById(R.id.student_add_float_button);
++        final TextInputEditText studentNameEditText = (TextInputEditText) view.findViewById(R.id.studentName_edit_text);
++        final TextInputEditText rollNoEditText = (TextInputEditText) view.findViewById(R.id.rollno_edit_text);
++        final TextInputEditText contactEditText = (TextInputEditText) view.findViewById(R.id.contact_edit_text);
++        final TextInputLayout textInputLayoutName = (TextInputLayout) view.findViewById(R.id.s_name_layout);
++        final TextInputLayout textInputLayoutRoll = (TextInputLayout) view.findViewById(R.id.s_roll_layout);
++        final TextInputLayout textInputLayoutContact = (TextInputLayout) view.findViewById(R.id.s_contact_layout);
++        floatingActionButton.setOnClickListener(new View.OnClickListener() {
++            @Override
++            public void onClick(View view) {
++                String studentName = studentNameEditText.getText().toString();
++                String rollNo = rollNoEditText.getText().toString();
++                String contact = contactEditText.getText().toString();
++
++                if (TextUtils.isEmpty(studentName)) {
++                    textInputLayoutName.setError("Student name can't be empty !");
++                    return;
++                } else {
++                    textInputLayoutName.setErrorEnabled(false);
++                    textInputLayoutName.setError(null);
++                }
++                if (TextUtils.isEmpty(rollNo)) {
++                    textInputLayoutRoll.setError("Roll No can't be empty !");
++                    return;
++                } else {
++                    textInputLayoutRoll.setErrorEnabled(false);
++                    textInputLayoutRoll.setError(null);
++                }
++                if (TextUtils.isEmpty(contact)) {
++                    textInputLayoutContact.setError("Contact can't be empty !");
++                    return;
++                } else {
++                    textInputLayoutContact.setError(null);
++                    textInputLayoutContact.setErrorEnabled(false);
++                }
++                Log.d("Fab_student", "student added");
++                getFragmentManager().popBackStack();
++                mListener.studentAddDataToDatabase(studentName, rollNo, contact, courseId);
++            }
++        });
++
++        return view;
++
++    }
++
++    // TODO: Rename method, update argument and hook method into UI event
++    public void onButtonPressed(Uri uri) {
++        if (mListener != null) {
++            mListener.onFragmentInteraction(uri);
++        }
++    }
++
++    @Override
++    public void onAttach(Context context) {
++        super.onAttach(context);
++        if (context instanceof OnFragmentInteractionListener) {
++            mListener = (OnFragmentInteractionListener) context;
++        } else {
++            throw new RuntimeException(context.toString()
++                    + " must implement OnFragmentInteractionListener");
++        }
++    }
++
++    @Override
++    public void onDetach() {
++        super.onDetach();
++        mListener = null;
++    }
++
++    public interface OnFragmentInteractionListener {
++        // TODO: Update argument type and name
++        void onFragmentInteraction(Uri uri);
++
++        void studentAddDataToDatabase(String studentName, String rollNo, String contact, int courseId);
++    }
++}
+Index: app/src/main/java/com/example/tung/mobileattendance/EnrollStudentFragment.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/EnrollStudentFragment.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/fragments/EnrollStudentFragment.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,4 +1,4 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.fragments;
+ 
+ import android.content.Context;
+ import android.net.Uri;
+@@ -7,6 +7,8 @@
+ import android.view.LayoutInflater;
+ import android.view.View;
+ import android.view.ViewGroup;
++
++import com.example.tung.mobileattendance.R;
+ 
+ 
+ /**
+Index: app/src/main/java/com/example/tung/mobileattendance/HomeFragment.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/HomeFragment.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/fragments/HomeFragment.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,4 +1,4 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.fragments;
+ 
+ import android.content.Context;
+ import android.net.Uri;
+@@ -11,15 +11,22 @@
+ import android.support.v7.widget.LinearLayoutManager;
+ import android.support.v7.widget.RecyclerView;
+ import android.support.v7.widget.Toolbar;
++import android.util.Log;
+ import android.view.LayoutInflater;
+ import android.view.View;
+ import android.view.ViewGroup;
+ 
++import com.example.tung.mobileattendance.adapters.HomeListAdapter;
++import com.example.tung.mobileattendance.OnListItemClickListener;
++import com.example.tung.mobileattendance.R;
++import com.example.tung.mobileattendance.models.Course;
++import com.example.tung.mobileattendance.models.CourseList;
++
+ import java.util.List;
+ 
+ 
+-public class HomeFragment extends Fragment {
+-    private CourseList course;
++public class HomeFragment extends Fragment implements OnListItemClickListener {
++    private CourseList courses;
+     private FloatingActionButton floatingActionButton;
+ 
+ 
+@@ -58,12 +65,16 @@
+             }
+         });
+ 
+-        course = (CourseList) getArguments().getSerializable("List_of_Course");
+-
++        final View noCourseView = view.findViewById(R.id.no_course_view);
++        courses = (CourseList) getArguments().getSerializable("List_of_Course");
++        if (courses != null && courses.getCourseList().size() < 1) {
++            noCourseView.setVisibility(View.VISIBLE);
++        }
+  /*Init recycler view*/
+         recyclerView = (RecyclerView) view.findViewById(R.id.all_notes_list);
+         homeListAdapter = new HomeListAdapter();
+-        homeListAdapter.setCourseList(course.getCourseList());
++        homeListAdapter.setOnListItemClickListener(this);
++        homeListAdapter.setCourseList(courses.getCourseList());
+ 
+         RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+         recyclerView.setLayoutManager(mLayoutManager);
+@@ -74,7 +85,7 @@
+     }
+ 
+     public void refresh(List<Course> courses) {
+-        course.setCourseList(courses);
++        this.courses.setCourseList(courses);
+         homeListAdapter.notifyDataSetChanged();
+     }
+ 
+@@ -102,6 +113,12 @@
+         mListener = null;
+     }
+ 
++    @Override
++    public void onListItemClick(View view, int courseId) {
++        Log.d("HomeFragment", "CourseId = " + courseId);
++        mListener.onCourseItemClick(courseId);
++    }
++
+     /**
+      * This interface must be implemented by activities that contain this
+      * fragment to allow an interaction in this fragment to be communicated
+@@ -117,6 +134,8 @@
+         void onFragmentInteraction(Uri uri);
+ 
+         void openAddCourseScreen();
++
++        void onCourseItemClick(int courseId);
+ 
+     }
+ }
+Index: app/src/main/java/com/example/tung/mobileattendance/LoginFragment.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/LoginFragment.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/fragments/LoginFragment.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,34 +1,34 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.fragments;
+ 
+ import android.content.Context;
+ import android.net.Uri;
+ import android.os.Bundle;
++import android.support.design.widget.TextInputLayout;
+ import android.support.v4.app.Fragment;
+ import android.support.v7.app.ActionBar;
+ import android.support.v7.app.AppCompatActivity;
+ import android.support.v7.widget.Toolbar;
++import android.text.TextUtils;
+ import android.view.LayoutInflater;
+ import android.view.View;
+ import android.view.ViewGroup;
+ import android.widget.Button;
+-import android.widget.EditText;
+ import android.widget.TextView;
+ import android.widget.Toast;
+ 
++import com.example.tung.mobileattendance.DataBaseHelper;
++import com.example.tung.mobileattendance.R;
+ 
+-/**
+- * A simple {@link Fragment} subclass.
+- * Activities that contain this fragment must implement the
+- * {@link LoginFragment.OnFragmentInteractionListener} interface
+- * to handle interaction events.
+- * Use the {@link LoginFragment#newInstance} factory method to
+- * create an instance of this fragment.
+- */
+ public class LoginFragment extends Fragment {
+     private Button loginButton;
+     private DataBaseHelper dataBaseHelperLogin;
+     private OnFragmentInteractionListener mListener;
+     private TextView signUpTextView;
++    private android.support.design.widget.TextInputEditText userNameEditText;
++    private android.support.design.widget.TextInputEditText passwordEditText;
++    private TextInputLayout textInputLayoutUserName;
++    private TextInputLayout textInputLayoutPassword;
++
+     public LoginFragment() {
+         // Required empty public constructor
+     }
+@@ -48,20 +48,37 @@
+ 
+ 
+         loginButton = (Button) view.findViewById(R.id.Login_button);
+-        final EditText userNameEditText = (EditText) view.findViewById(R.id.login_username);
+-        final EditText passwordEditText = (EditText) view.findViewById(R.id.login_password);
++        userNameEditText = (android.support.design.widget.TextInputEditText) view.findViewById(R.id.login_username);
++        passwordEditText = (android.support.design.widget.TextInputEditText) view.findViewById(R.id.login_password);
+         signUpTextView = (TextView) view.findViewById(R.id.sign_up_textView);
++        textInputLayoutUserName = (TextInputLayout) view.findViewById(R.id.username_layout);
++        textInputLayoutPassword = (TextInputLayout) view.findViewById(R.id.password_layout);
+-        dataBaseHelperLogin =  new DataBaseHelper(getActivity());
++        dataBaseHelperLogin = new DataBaseHelper(getActivity());
+         loginButton.setOnClickListener(new View.OnClickListener() {
+             @Override
+             public void onClick(View view) {
+-                String login_username = userNameEditText.getText().toString();
++                String loginUserName = userNameEditText.getText().toString();
+                 String password = passwordEditText.getText().toString();
++                if (TextUtils.isEmpty(loginUserName)) {
++                    textInputLayoutUserName.setError("Username can't be empty !");
++                    return;
++                }else{
++                    textInputLayoutUserName.setError(null);
++                    textInputLayoutUserName.setErrorEnabled(false);
++                }
++                if (TextUtils.isEmpty(password)) {
++                    textInputLayoutPassword.setError("Password can't be empty !");
++                    return;
++                }else{
++                    textInputLayoutUserName.setError(null);
++                    textInputLayoutUserName.setErrorEnabled(false);
++                }
+ 
+-                boolean isValidUser = dataBaseHelperLogin.getLogin(login_username, password);
++                boolean isValidUser = dataBaseHelperLogin.getLogin(loginUserName, password);
+                 if (isValidUser == true) {
++                    getFragmentManager().popBackStack();
+                     mListener.onSuccessOpenHomescreen();
+-                }else {
++                } else {
+                     Toast.makeText(getActivity(), "Either your username or password is wrong", Toast.LENGTH_LONG).show();
+                 }
+ 
+Index: app/src/main/java/com/example/tung/mobileattendance/SignupFragment.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/SignupFragment.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/fragments/SignupFragment.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,9 +1,10 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.fragments;
+ 
+ import android.content.Context;
+ import android.net.Uri;
+ import android.os.Bundle;
+-import android.support.design.widget.FloatingActionButton;
++import android.support.design.widget.TextInputEditText;
++import android.support.design.widget.TextInputLayout;
+ import android.support.v4.app.Fragment;
+ import android.support.v7.app.ActionBar;
+ import android.support.v7.app.AppCompatActivity;
+@@ -16,22 +17,16 @@
+ import android.widget.Button;
+ import android.widget.EditText;
+ 
++import com.example.tung.mobileattendance.R;
+ 
+-/**
+- * A simple {@link Fragment} subclass.
+- * Activities that contain this fragment must implement the
+- * {@link SignupFragment.OnFragmentInteractionListener} interface
+- * to handle interaction events.
+- * Use the {@link SignupFragment#newInstance} factory method to
+- * create an instance of this fragment.
+- */
+-public class SignupFragment extends Fragment {
+ 
++public class SignUpFragment extends Fragment {
++
+     private Button button;
+ 
+     private OnFragmentInteractionListener mListener;
+ 
+-    public SignupFragment() {
++    public SignUpFragment() {
+         // Required empty public constructor
+     }
+ 
+@@ -45,10 +40,16 @@
+ 
+         ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+         actionBar.setTitle("Sign Up");
++        actionBar.setHomeAsUpIndicator(R.mipmap.ic_arrow_back_white_18dp);
++        actionBar.setDisplayHomeAsUpEnabled(true);
++        actionBar.setHomeButtonEnabled(true);
+         button= (Button)view.findViewById(R.id.sign_button);
+-        final EditText usernameEditText= (EditText) view.findViewById(R.id.username1_layout);
+-        final EditText emailEditText= (EditText) view.findViewById(R.id.email_layout);
+-        final EditText passwordEditText= (EditText) view.findViewById(R.id.password_layout);
++        final android.support.design.widget.TextInputEditText usernameEditText= (android.support.design.widget.TextInputEditText) view.findViewById(R.id.username1_layout);
++        final android.support.design.widget.TextInputEditText emailEditText= (android.support.design.widget.TextInputEditText) view.findViewById(R.id.email_layout);
++        final android.support.design.widget.TextInputEditText passwordEditText= (android.support.design.widget.TextInputEditText) view.findViewById(R.id.password_layout);
++        final TextInputLayout textInputLayoutUserName = (TextInputLayout) view.findViewById(R.id.username_layout);
++        final TextInputLayout textInputLayoutEmail = (TextInputLayout) view.findViewById(R.id.email_input_layout);
++        final TextInputLayout textInputLayoutPassword = (TextInputLayout) view.findViewById(R.id.password_input_layout);
+ 
+         button.setOnClickListener(new View.OnClickListener() {
+             @Override
+@@ -58,16 +59,22 @@
+                 String password=passwordEditText.getText().toString();
+ 
+                 if(TextUtils.isEmpty(username)){
+-                    usernameEditText.setError("username name can't be empty !");
++                    textInputLayoutUserName.setError("Username can't be empty !");
+                     return;
++                }else{
++                    textInputLayoutUserName.setErrorEnabled(false);
+                 }
+                 if(TextUtils.isEmpty(email)){
+-                    emailEditText.setError(" email id can't be empty !");
++                    textInputLayoutEmail.setError("E-mail id can't be empty !");
+                     return;
++                }else {
++                    textInputLayoutEmail.setErrorEnabled(false);
+                 }
+                 if(TextUtils.isEmpty(password)){
+-                    passwordEditText.setError("password name can't be empty !");
++                    textInputLayoutPassword.setError("Password can't be empty !");
+                     return;
++                }else {
++                    textInputLayoutPassword.setErrorEnabled(false);
+                 }
+                 Log.d("button","login added");
+                 mListener.addNewUserToDataBase(username,email,password);
+Index: app/src/main/java/com/example/tung/mobileattendance/fragments/StudentListFragment.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/fragments/StudentListFragment.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/java/com/example/tung/mobileattendance/fragments/StudentListFragment.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,208 @@
++package com.example.tung.mobileattendance.fragments;
++
++import android.app.Dialog;
++import android.content.Context;
++import android.content.DialogInterface;
++import android.net.Uri;
++import android.os.Bundle;
++import android.support.design.widget.FloatingActionButton;
++import android.support.v4.app.Fragment;
++import android.support.v7.app.ActionBar;
++import android.support.v7.app.AppCompatActivity;
++import android.support.v7.widget.DefaultItemAnimator;
++import android.support.v7.widget.LinearLayoutManager;
++import android.support.v7.widget.RecyclerView;
++import android.support.v7.widget.Toolbar;
++import android.util.Log;
++import android.view.LayoutInflater;
++import android.view.Menu;
++import android.view.MenuInflater;
++import android.view.MenuItem;
++import android.view.View;
++import android.view.ViewGroup;
++import android.view.Window;
++import android.widget.Button;
++import android.widget.DatePicker;
++import android.widget.TextView;
++
++import com.example.tung.mobileattendance.R;
++import com.example.tung.mobileattendance.adapters.StudentListAdapter;
++import com.example.tung.mobileattendance.models.Student;
++import com.example.tung.mobileattendance.models.StudentList;
++
++import java.util.List;
++
++import static com.example.tung.mobileattendance.constants.Constant.COURSE_ID;
++import static com.example.tung.mobileattendance.constants.Constant.COURSE_NAME;
++import static com.example.tung.mobileattendance.constants.Constant.LIST_OF_STUDENTS;
++
++
++public class StudentListFragment extends Fragment {
++
++
++    FloatingActionButton floatingActionButton;
++    private static StudentList studentList;
++
++    private RecyclerView recyclerView;
++    private static StudentListAdapter studentListAdapter;
++
++
++    private OnFragmentInteractionListener mListener;
++
++    public StudentListFragment() {
++        // Required empty public constructor
++    }
++
++    public static StudentListFragment newInstance(String param1, String param2) {
++        StudentListFragment fragment = new StudentListFragment();
++        Bundle args = new Bundle();
++        fragment.setArguments(args);
++        return fragment;
++    }
++
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        if (getArguments() != null) {
++        }
++    }
++
++    @Override
++    public View onCreateView(LayoutInflater inflater, ViewGroup container,
++                             Bundle savedInstanceState) {
++        // Inflate the layout for this fragment
++        View view = inflater.inflate(R.layout.fragment_student_list, container, false);
++        Log.d("StudentListFragment", "openAddStudentScreen()");
++        Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
++        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
++        final String title = (String) getArguments().get(COURSE_NAME);
++        final int courseId = (int) getArguments().get(COURSE_ID);
++        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
++        actionBar.setTitle("Students in " + title);
++        actionBar.setHomeAsUpIndicator(R.mipmap.ic_arrow_back_white_18dp);
++        actionBar.setDisplayHomeAsUpEnabled(true);
++        actionBar.setHomeButtonEnabled(true);
++        setHasOptionsMenu(true);
++        floatingActionButton = (FloatingActionButton) view.findViewById(R.id.fab_student);
++        floatingActionButton.setOnClickListener(new View.OnClickListener() {
++            @Override
++            public void onClick(View view) {
++                getFragmentManager().popBackStack();
++                mListener.openAddStudentScreen(courseId, title);
++            }
++        });
++
++        studentList = (StudentList) getArguments().getSerializable(LIST_OF_STUDENTS);
++        final View viewNoStudent = view.findViewById(R.id.no_students_view);
++        if (studentList != null && studentList.getStudentList().size() < 1) {
++            /*Display Custom view for add new Student*/
++            viewNoStudent.setVisibility(View.VISIBLE);
++        }
++ /*Init recycler view*/
++        recyclerView = (RecyclerView) view.findViewById(R.id.all_student_list);
++        studentListAdapter = new StudentListAdapter();
++        studentListAdapter.setStudentList(studentList.getStudentList());
++
++        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
++        recyclerView.setLayoutManager(mLayoutManager);
++        recyclerView.setItemAnimator(new DefaultItemAnimator());
++        recyclerView.setAdapter(studentListAdapter);
++        return view;
++
++    }
++
++    // TODO: Rename method, update argument and hook method into UI event
++    public void onButtonPressed(Uri uri) {
++        if (mListener != null) {
++            mListener.onFragmentInteraction(uri);
++        }
++    }
++
++    @Override
++    public void onAttach(Context context) {
++        super.onAttach(context);
++        if (context instanceof OnFragmentInteractionListener) {
++            mListener = (OnFragmentInteractionListener) context;
++        } else {
++            throw new RuntimeException(context.toString()
++                    + " must implement OnFragmentInteractionListener");
++        }
++    }
++
++    @Override
++    public void onDetach() {
++        super.onDetach();
++        mListener = null;
++    }
++
++    public static void refresh(List<Student> studentList) {
++        Log.d("StudentListFragment", "refreshing StudentListFragment");
++        StudentListFragment.studentList.setStudentList(studentList);
++        studentListAdapter.notifyDataSetChanged();
++
++
++    }
++
++    public interface OnFragmentInteractionListener {
++        // TODO: Update argument type and name
++        void onFragmentInteraction(Uri uri);
++        void openAddStudentScreen(int courseId, String title);
++        void getAllStudentByDate(int day, int month, int year);
++    }
++
++    @Override
++    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
++        inflater.inflate(R.menu.menu, menu);  // Use filter.xml from step 1
++    }
++
++    @Override
++    public boolean onOptionsItemSelected(MenuItem item) {
++        int id = item.getItemId();
++        if (id == R.id.done_action) {
++//            showPopUpForDelete(notes);
++            Log.d("Menu", "On Click Done Icon");
++            return true;
++        }
++        if (id == R.id.event_action) {
++            showPopUpForDatePicker();
++            Log.d("Menu", "On Click Calender Icon");
++            return true;
++        }
++
++        return super.onOptionsItemSelected(item);
++    }
++
++    private void showPopUpForDatePicker() {
++        final Dialog dialog = new Dialog(getActivity());
++        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
++        dialog.setCancelable(true);
++        dialog.setContentView(R.layout.date_picker_dialog);
++        final Button okButton = (Button) dialog.findViewById(R.id.ok_button);
++        final Button cancelButton = (Button) dialog.findViewById(R.id.cancel_button);
++        final DatePicker datePicker = (DatePicker) dialog.findViewById(R.id.date_picker);
++
++        okButton.setOnClickListener(new View.OnClickListener() {
++            @Override
++            public void onClick(View v) {
++                dialog.dismiss();
++            }
++        });
++
++        cancelButton.setOnClickListener(new View.OnClickListener() {
++            @Override
++            public void onClick(View v) {
++                dialog.cancel();
++            }
++        });
++        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
++            @Override
++            public void onDismiss(DialogInterface dialog) {
++                int day = datePicker.getDayOfMonth();
++                int month = datePicker.getMonth() + 1;
++                int year = datePicker.getYear();
++                mListener.getAllStudentByDate(day,month,year);
++            }
++        });
++        dialog.show();
++    }
++}
+Index: app/src/main/java/com/example/tung/mobileattendance/Course.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/Course.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/models/Course.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,4 +1,4 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.models;
+ 
+ import java.io.Serializable;
+ 
+Index: app/src/main/java/com/example/tung/mobileattendance/CourseList.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/CourseList.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/models/CourseList.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,4 +1,4 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.models;
+ 
+ /**
+  * Created by tung on 10/10/16.
+Index: app/src/main/java/com/example/tung/mobileattendance/Login.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/Login.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/models/Login.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,4 +1,4 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.models;
+ 
+ import java.io.Serializable;
+ 
+Index: app/src/main/java/com/example/tung/mobileattendance/Student.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/Student.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/models/Student.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,4 +1,4 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.models;
+ 
+ import java.io.Serializable;
+ 
+@@ -9,8 +9,9 @@
+ public class Student implements Serializable {
+     private int id;
+     private String studentName;
+-    private  String rollNo;
++    private String rollNo;
+     private String contact;
++    private int courseId;
+ 
+ 
+     public int getId() {
+@@ -43,5 +44,13 @@
+ 
+     public void setContact(String contact) {
+         this.contact = contact;
++    }
++
++    public int getCourseId() {
++        return courseId;
++    }
++
++    public void setCourseId(int courseId) {
++        this.courseId = courseId;
+     }
+ }
+Index: app/src/main/java/com/example/tung/mobileattendance/StudentList.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/StudentList.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/models/StudentList.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,4 +1,4 @@
+-package com.example.tung.mobileattendance;
++package com.example.tung.mobileattendance.models;
+ 
+ import java.io.Serializable;
+ import java.util.List;
+Index: app/src/main/java/com/example/tung/mobileattendance/AddStudentFragment.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/AddStudentFragment.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/AddStudentFragment.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
+@@ -1,116 +0,0 @@
+-package com.example.tung.mobileattendance;
+-
+-import android.content.Context;
+-import android.net.Uri;
+-import android.os.Bundle;
+-import android.support.design.widget.FloatingActionButton;
+-import android.support.v4.app.Fragment;
+-import android.text.TextUtils;
+-import android.util.Log;
+-import android.view.LayoutInflater;
+-import android.view.View;
+-import android.view.ViewGroup;
+-import android.widget.EditText;
+-
+-
+-/**
+- * A simple {@link Fragment} subclass.
+- * Activities that contain this fragment must implement the
+- * {@link AddStudentFragment.OnFragmentInteractionListener} interface
+- * to handle interaction events.
+- * Use the {@link AddStudentFragment#} factory method to
+- * create an instance of this fragment.
+- */
+-public class AddStudentFragment extends Fragment {
+-
+-    private OnFragmentInteractionListener mListener;
+-    FloatingActionButton floatingActionButton;
+-
+-    public AddStudentFragment() {
+-        // Required empty public constructor
+-    }
+-
+-
+-    @Override
+-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+-                             Bundle savedInstanceState) {
+-        // Inflate the layout for this fragment
+-        View view=inflater.inflate(R.layout.fragment_add_student, container, false);
+-
+-
+-        floatingActionButton = (FloatingActionButton) view.findViewById(R.id.student_add_float_button);
+-        final EditText studentNameEditText = (EditText) view.findViewById(R.id.studentName_edit_text);
+-        final EditText rollnoEditText = (EditText) view.findViewById(R.id.rollno_edit_text);
+-        final EditText contactEditText = (EditText) view.findViewById(R.id.contact_edit_text);
+-
+-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+-            @Override
+-            public void onClick(View view) {
+-                String studentName = studentNameEditText.getText().toString();
+-                String rollNo = rollnoEditText.getText().toString();
+-                String contact = contactEditText.getText().toString();
+-
+-                if (TextUtils.isEmpty(studentName)) {
+-
+-
+-                    studentNameEditText.setError("student Name name can't be empty !");
+-                    return;
+-                }
+-                if (TextUtils.isEmpty(rollNo)) {
+-                    rollnoEditText.setError("Roll No name can't be empty !");
+-                    return;
+-                }
+-                if (TextUtils.isEmpty(contact)) {
+-                    contactEditText.setError("Contact can't be empty !");
+-                    return;
+-                }
+-                Log.d("Fab_student", "student added");
+-                getFragmentManager().popBackStack();
+-                mListener.studentAddDataToDatabase(studentName, rollNo, contact);
+-            }
+-        });
+-
+-     return view;
+-
+-    }
+-
+-    // TODO: Rename method, update argument and hook method into UI event
+-    public void onButtonPressed(Uri uri) {
+-        if (mListener != null) {
+-            mListener.onFragmentInteraction(uri);
+-        }
+-    }
+-
+-    @Override
+-    public void onAttach(Context context) {
+-        super.onAttach(context);
+-        if (context instanceof OnFragmentInteractionListener) {
+-            mListener = (OnFragmentInteractionListener) context;
+-        } else {
+-            throw new RuntimeException(context.toString()
+-                    + " must implement OnFragmentInteractionListener");
+-        }
+-    }
+-
+-    @Override
+-    public void onDetach() {
+-        super.onDetach();
+-        mListener = null;
+-    }
+-
+-    /**
+-     * This interface must be implemented by activities that contain this
+-     * fragment to allow an interaction in this fragment to be communicated
+-     * to the activity and potentially other fragments contained in that
+-     * activity.
+-     * <p>
+-     * See the Android Training lesson <a href=
+-     * "http://developer.android.com/training/basics/fragments/communicating.html"
+-     * >Communicating with Other Fragments</a> for more information.
+-     */
+-    public interface OnFragmentInteractionListener {
+-        // TODO: Update argument type and name
+-        void onFragmentInteraction(Uri uri);
+-        void studentAddDataToDatabase(String studentName, String rollNo,String contact);
+-    }
+-}
+Index: app/src/main/java/com/example/tung/mobileattendance/DataBaseHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/DataBaseHelper.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/DataBaseHelper.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -6,8 +6,13 @@
+ import android.database.DatabaseErrorHandler;
+ import android.database.sqlite.SQLiteDatabase;
+ import android.database.sqlite.SQLiteOpenHelper;
++import android.util.Log;
+ 
+ 
++import com.example.tung.mobileattendance.models.Course;
++import com.example.tung.mobileattendance.models.Login;
++import com.example.tung.mobileattendance.models.Student;
++
+ import java.util.ArrayList;
+ import java.util.List;
+ 
+@@ -35,10 +40,10 @@
+     //Column Name
+     private static final String STUDENT_TABLE = "student";
+ 
+-    private static final String STUDENT_ID="id";
++    private static final String STUDENT_ID = "id";
+-    private static final String STUDENT_NAME="studentName";
++    private static final String STUDENT_NAME = "studentName";
+-    private static final String ROLL_NO="rollno";
++    private static final String ROLL_NO = "rollno";
+-    private static final String CONTACT="contact";
++    private static final String CONTACT = "contact";
+ 
+ 
+     private static final String CREATE_LOGIN_TABLE = "CREATE TABLE " +
+@@ -47,11 +52,9 @@
+     private static final String CREATE_COURSE_TABLE = "CREATE TABLE " +
+             COURSE_TABLE + "( " + COURSE_ID + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COURSE_TITLE + " TEXT, " + COURSE_CLASS + " TEXT, " + COURSE_SECTION + " TEXT)";
+ 
+-    private static final String CREATE_STUDENT_TABLE="CREATE TABLE" + STUDENT_TABLE + "( " + STUDENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + STUDENT_NAME + " TEXT, " + ROLL_NO + " TEXT, " + CONTACT + " TEXT)";
++    private static final String CREATE_STUDENT_TABLE = "CREATE TABLE " + STUDENT_TABLE + " ( " + STUDENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + STUDENT_NAME + " TEXT, " + ROLL_NO + " TEXT, " + CONTACT + " TEXT" + ", " + "course_id" + " INTEGER)";
+ 
+ 
+-
+-
+     public DataBaseHelper(Context context) {
+         super(context, DB_NAME, null, DB_VERSION);
+     }
+@@ -87,21 +90,21 @@
+         return id;
+     }
+ 
+-    public long createStudent(Student student)
+-    {
++    public long createStudent(Student student) {
+-        SQLiteDatabase sqLiteDatabase=this.getWritableDatabase();
++        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+-        ContentValues contentValues=new ContentValues();
++        ContentValues contentValues = new ContentValues();
+-        contentValues.put(STUDENT_NAME,student.getStudentName());
++        contentValues.put(STUDENT_NAME, student.getStudentName());
+-        contentValues.put(ROLL_NO,student.getRollNo());
++        contentValues.put(ROLL_NO, student.getRollNo());
+         contentValues.put(CONTACT, student.getContact());
+-
++        contentValues.put("course_id", student.getCourseId());
+-        long id = sqLiteDatabase.insert(STUDENT_TABLE,null,contentValues);
++        long id = sqLiteDatabase.insert(STUDENT_TABLE, null, contentValues);
+-        return  id;
++        return id;
+     }
+ 
+-    public Course getCourse(long id) {
++    public Course getCourse(long courseId) {
+         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+-        String selectQuery = "SELECT * FROM " + COURSE_TABLE + " WHERE id = " + id;
++        String selectQuery = "SELECT * FROM " + COURSE_TABLE + " WHERE id = " + courseId;
++        Log.d("DBQuery",selectQuery);
+         Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+         if (cursor != null) cursor.moveToFirst();
+         Course course = new Course();
+@@ -112,9 +115,8 @@
+         return course;
+     }
+ 
+-    public Student getStudent(long id)
+-    {
++    public Student getStudent(long id) {
+-        SQLiteDatabase sqLiteDatabase= this.getReadableDatabase();
++        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+         String selectQuery = "SELECT * FROM " + COURSE_TABLE + " WHERE id = " + id;
+         Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+         if (cursor != null) cursor.moveToFirst();
+@@ -170,6 +172,29 @@
+         String selectQuery = "SELECT  * FROM " + STUDENT_TABLE;
+ 
+ 
++        SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
++        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
++
++        // looping through all rows and adding to list
++        if (cursor.moveToFirst()) {
++            do {
++                Student student = new Student();
++                student.setId(cursor.getInt((cursor.getColumnIndex(STUDENT_ID))));
++                student.setStudentName(cursor.getString(cursor.getColumnIndex(STUDENT_NAME)));
++                student.setRollNo(cursor.getString(cursor.getColumnIndex(ROLL_NO)));
++                student.setContact(cursor.getString(cursor.getColumnIndex(CONTACT)));
++
++
++                // adding to notesArrayList list
++                studentList.add(student);
++            } while (cursor.moveToNext());
++        }
++        return studentList;
++    }
++
++    public List<Student> getStudentByCourse(int courseId) {
++        List<Student> studentList = new ArrayList<Student>();
++        String selectQuery = "SELECT  * FROM " + STUDENT_TABLE + " where course_id = "+ courseId;
+         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+         Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+ 
+@@ -212,9 +237,9 @@
+ 
+     public boolean getLogin(String userName, String password) {
+         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
+-        String selectQuery = "SELECT * FROM " + LOGIN_TABLE + " WHERE  " + LOGIN_USERNAME + " = '" + userName + "' AND  " + LOGIN_PASSWORD + "  =  '" + password+"'";
++        String selectQuery = "SELECT * FROM " + LOGIN_TABLE + " WHERE  " + LOGIN_USERNAME + " = '" + userName + "' AND  " + LOGIN_PASSWORD + "  =  '" + password + "'";
+         Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+-        if (cursor.getCount()>0)
++        if (cursor.getCount() > 0)
+             return true;
+         else
+             return false;
+Index: app/src/main/java/com/example/tung/mobileattendance/DataBaseHelperAddSttudent.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/DataBaseHelperAddSttudent.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/DataBaseHelperAddStudent.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -2,15 +2,12 @@
+ 
+ import android.content.ContentValues;
+ import android.content.Context;
+-import android.database.Cursor;
+ import android.database.DatabaseErrorHandler;
+ import android.database.sqlite.SQLiteDatabase;
+ import android.database.sqlite.SQLiteOpenHelper;
+ 
+ 
+-
+-import java.util.ArrayList;
+-import java.util.List;
++import com.example.tung.mobileattendance.models.Student;
+ 
+ 
+ /**
+Index: app/src/main/java/com/example/tung/mobileattendance/MainActivity.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/MainActivity.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/MainActivity.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -7,18 +7,35 @@
+ import android.support.v7.widget.Toolbar;
+ import android.util.Log;
+ 
++import com.example.tung.mobileattendance.fragments.AddCourseFragment;
++import com.example.tung.mobileattendance.fragments.AddStudentFragment;
++import com.example.tung.mobileattendance.fragments.EnrollStudentFragment;
++import com.example.tung.mobileattendance.fragments.HomeFragment;
++import com.example.tung.mobileattendance.fragments.LoginFragment;
++import com.example.tung.mobileattendance.fragments.SignUpFragment;
++import com.example.tung.mobileattendance.fragments.StudentListFragment;
++import com.example.tung.mobileattendance.models.Course;
++import com.example.tung.mobileattendance.models.CourseList;
++import com.example.tung.mobileattendance.models.Login;
++import com.example.tung.mobileattendance.models.Student;
++import com.example.tung.mobileattendance.models.StudentList;
++
+ import java.util.List;
+ 
+-public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener, LoginFragment.OnFragmentInteractionListener,StudentListFragment.OnFragmentInteractionListener, AddStudentFragment.OnFragmentInteractionListener, EnrollStudentFragment.OnFragmentInteractionListener, SignupFragment.OnFragmentInteractionListener, HomeFragment.OnFragmentInteractionListener, AddCourseFragment.OnFragmentInteractionListener {
++import static com.example.tung.mobileattendance.constants.Constant.COURSE_ID;
++import static com.example.tung.mobileattendance.constants.Constant.COURSE_NAME;
++import static com.example.tung.mobileattendance.constants.Constant.LIST_OF_STUDENTS;
++
++public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener, LoginFragment.OnFragmentInteractionListener, StudentListFragment.OnFragmentInteractionListener, AddStudentFragment.OnFragmentInteractionListener, EnrollStudentFragment.OnFragmentInteractionListener, SignUpFragment.OnFragmentInteractionListener, HomeFragment.OnFragmentInteractionListener, AddCourseFragment.OnFragmentInteractionListener {
+     LoginFragment loginFragment;
+     HomeFragment homeFragment;
+     AddCourseFragment addCourseFragment;
+-    SignupFragment singupFragment;
++    SignUpFragment singUpFragment;
+     StudentListFragment studentListFragment;
+     EnrollStudentFragment enrollStudentFragment;
+     AddStudentFragment addStudentFragment;
+     private DataBaseHelper dataBaseHelper;
+-    private Toolbar toolbar;
++    private Toolbar toolBar;
+ 
+ 
+     @Override
+@@ -26,25 +43,27 @@
+         super.onCreate(savedInstanceState);
+         setContentView(R.layout.activity_main);
+ 
+-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+-        setSupportActionBar(toolbar);
++        toolBar = (Toolbar) findViewById(R.id.toolbar);
++        setSupportActionBar(toolBar);
+         getSupportActionBar().setTitle("Mobile Attendance");
++        dataBaseHelper = new DataBaseHelper(getApplicationContext());
+ 
+-        //openLoginFragment();
++        openLoginFragment();
+ //        openAddCourseFragment();
+-//        openSignupFragment();
++//        openSignUpFragment();
+ //          openEnrollStudentFragment();
+-        openAddStudentFragment();
+-        dataBaseHelper = new DataBaseHelper(getApplicationContext());
++//        openAddStudentFragment();
+ 
+-//         List<Course> courseList = dataBaseHelper.getAllCourse();
++/*
++        List<Course> courseList = dataBaseHelper.getAllCourse();
+ 
+-//         openHomeFragment(courseList);
++        openHomeFragment(courseList);
++*/
+- // openAddStudentFragment();
+-  //  openAddStudentScreen();
++        // openAddStudentFragment();
++        //  openAddStudentScreen();
+ 
+-  //      List<Student> studentList = dataBaseHelper.getAllStudent();
++//        List<Student> studentList = dataBaseHelper.getAllStudent();
+-//openStudentListFragment(studentList);
++//        openStudentListFragment(studentList);
+ 
+     }
+ 
+@@ -53,30 +72,20 @@
+         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+         enrollStudentFragment = new EnrollStudentFragment();
+-
++        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
+         fragmentTransaction.replace(R.id.fragment, enrollStudentFragment);
+         fragmentTransaction.addToBackStack(null);
+         fragmentTransaction.commit();
+ 
+     }
+ 
+-    private void openAddStudentFragment() {
+-        android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+-        android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+-        addStudentFragment = new AddStudentFragment();
+ 
+-        fragmentTransaction.replace(R.id.fragment, addStudentFragment);
+-        fragmentTransaction.addToBackStack(null);
+-        fragmentTransaction.commit();
+-
+-    }
+-
+-    private void openSignupFragment() {
++    private void openSignUpFragment() {
+         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+-        singupFragment = new SignupFragment();
+-
+-        fragmentTransaction.replace(R.id.fragment, singupFragment);
++        singUpFragment = new SignUpFragment();
++        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
++        fragmentTransaction.replace(R.id.fragment, singUpFragment);
+         fragmentTransaction.addToBackStack(null);
+         fragmentTransaction.commit();
+ 
+@@ -86,7 +95,7 @@
+         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+         loginFragment = new LoginFragment();
+-
++        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
+         fragmentTransaction.replace(R.id.fragment, loginFragment);
+         fragmentTransaction.commit();
+ 
+@@ -98,6 +107,7 @@
+ 
+         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
++        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
+         Bundle bundle = new Bundle();
+         CourseList listOfCourse = new CourseList();
+         listOfCourse.setCourseList(courseList);
+@@ -105,17 +115,34 @@
+         homeFragment = new HomeFragment();
+         homeFragment.setArguments(bundle);
+         fragmentTransaction.replace(R.id.fragment, homeFragment);
+-        supportFragmentManager.popBackStack();
++        fragmentTransaction.addToBackStack(null);
+ 
++//        supportFragmentManager.popBackStack();
++
+         fragmentTransaction.commit();
+ 
+     }
+ 
++    private void openAddStudentFragment(int courseId, String title) {
++        android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
++        android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
++        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
++        addStudentFragment = new AddStudentFragment();
++        Bundle bundle = new Bundle();
++        bundle.putInt(COURSE_ID, courseId);
++        bundle.putString(COURSE_NAME, title);
++        addStudentFragment.setArguments(bundle);
++        fragmentTransaction.replace(R.id.fragment, addStudentFragment);
++        fragmentTransaction.addToBackStack(null);
++        fragmentTransaction.commit();
++
++    }
++
+     private void openAddCourseFragment() {
+         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+         addCourseFragment = new AddCourseFragment();
+-
++        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
+         fragmentTransaction.replace(R.id.fragment, addCourseFragment);
+         fragmentTransaction.addToBackStack(null);
+         fragmentTransaction.commit();
+@@ -129,44 +156,47 @@
+     }
+ 
+     @Override
+-    public void openAddStudentScreen() {
+-
++    public void openAddStudentScreen(int courseId, String title) {
++        Log.d("MainActivity", "openAddStudentScreen()");
+         dataBaseHelper = new DataBaseHelper(getApplicationContext());
+-
+         List<Student> studentList = dataBaseHelper.getAllStudent();
++        openAddStudentFragment(courseId, title);
+ 
+-        openStudentListFragment(studentList);
++    }
+ 
++    @Override
++    public void getAllStudentByDate(int day, int month, int year) {
++        Log.d("MainActivity", "Date is : " + day + "-" + month + "-" + year);
+     }
+ 
+ 
+-    private void openStudentListFragment(List<Student> studentList) {
++    private void openStudentListFragment(List<Student> studentList, Course course) {
+ 
+         /*Get all data from DB and pass to HomeFragment*/
+-
+         android.support.v4.app.FragmentManager supportFragmentManager = getSupportFragmentManager();
+         android.support.v4.app.FragmentTransaction fragmentTransaction = supportFragmentManager.beginTransaction();
+-        Bundle bundle1 = new Bundle();
++        fragmentTransaction.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right);
++        Bundle bundle = new Bundle();
+         StudentList listOfStudent = new StudentList();
+         listOfStudent.setStudentList(studentList);
+-        bundle1.putSerializable("List_of_Student", listOfStudent);
++        bundle.putSerializable(LIST_OF_STUDENTS, listOfStudent);
++        bundle.putString(COURSE_NAME, course.getTitle());
++        bundle.putInt(COURSE_ID, course.getId());
+         studentListFragment = new StudentListFragment();
+-        studentListFragment.setArguments(bundle1);
++        studentListFragment.setArguments(bundle);
+         fragmentTransaction.replace(R.id.fragment, studentListFragment);
+-        supportFragmentManager.popBackStack();
+-
++        fragmentTransaction.addToBackStack(null);
+         fragmentTransaction.commit();
+-
+     }
+ 
+ 
+-
+     @Override
+-    public void studentAddDataToDatabase(String studentName, String rollNo, String contact) {
++    public void studentAddDataToDatabase(String studentName, String rollNo, String contact, int courseId) {
+         Student student = new Student();
+         student.setStudentName(studentName);
+         student.setRollNo(rollNo);
+         student.setContact(contact);
++        student.setCourseId(courseId);
+         dataBaseHelper.createStudent(student);
+         Log.d("MainActivity", "Save Data in DB");
+         List<Student> studentList = dataBaseHelper.getAllStudent();
+@@ -187,7 +217,7 @@
+ 
+     @Override
+     public void openSignUpScreen() {
+-        openSignupFragment();
++        openSignUpFragment();
+     }
+ 
+     @Override
+@@ -204,6 +234,15 @@
+     @Override
+     public void openAddCourseScreen() {
+         openAddCourseFragment();
++    }
++
++    @Override
++    public void onCourseItemClick(int courseId) {
++        Log.d("HomeFragment", "CourseId = " + courseId);
++        dataBaseHelper = new DataBaseHelper(getApplicationContext());
++        List<Student> studentList = dataBaseHelper.getStudentByCourse(courseId);
++        Course course = dataBaseHelper.getCourse(courseId);
++        openStudentListFragment(studentList, course);
+     }
+ 
+ 
+Index: app/src/main/java/com/example/tung/mobileattendance/OnListItemClickListener.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/OnListItemClickListener.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/java/com/example/tung/mobileattendance/OnListItemClickListener.java	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,10 @@
++package com.example.tung.mobileattendance;
++
++import android.view.View;
++
++/**
++ * Created by sam on 2/8/16.
++ */
++public interface OnListItemClickListener {
++    void onListItemClick(View view, int courseId);
++}
+Index: app/src/main/java/com/example/tung/mobileattendance/StudentListFragment.java
+===================================================================
+--- app/src/main/java/com/example/tung/mobileattendance/StudentListFragment.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/java/com/example/tung/mobileattendance/StudentListFragment.java	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
+@@ -1,162 +0,0 @@
+-package com.example.tung.mobileattendance;
+-
+-import android.content.Context;
+-import android.net.Uri;
+-import android.os.Bundle;
+-import android.support.design.widget.FloatingActionButton;
+-import android.support.v4.app.Fragment;
+-import android.support.v7.app.ActionBar;
+-import android.support.v7.app.AppCompatActivity;
+-import android.support.v7.widget.DefaultItemAnimator;
+-import android.support.v7.widget.LinearLayoutManager;
+-import android.support.v7.widget.RecyclerView;
+-import android.support.v7.widget.Toolbar;
+-import android.view.LayoutInflater;
+-import android.view.View;
+-import android.view.ViewGroup;
+-
+-import java.util.List;
+-
+-
+-/**
+- * A simple {@link Fragment} subclass.
+- * Activities that contain this fragment must implement the
+- * {@link StudentListFragment.OnFragmentInteractionListener} interface
+- * to handle interaction events.
+- * Use the {@link StudentListFragment#newInstance} factory method to
+- * create an instance of this fragment.
+- */
+-public class StudentListFragment extends Fragment {
+-
+-    // TODO: Rename parameter arguments, choose names that match
+-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+-    private static final String ARG_PARAM1 = "param1";
+-    private static final String ARG_PARAM2 = "param2";
+-
+-    FloatingActionButton floatingActionButton;
+-    private static StudentList student;
+-
+-    private RecyclerView recyclerView;
+-    private static StudentListAdapter studentListAdapter;
+-
+-
+-
+-    // TODO: Rename and change types of parameters
+-    private String mParam1;
+-    private String mParam2;
+-
+-    private OnFragmentInteractionListener mListener;
+-
+-    public StudentListFragment() {
+-        // Required empty public constructor
+-    }
+-
+-    /**
+-     * Use this factory method to create a new instance of
+-     * this fragment using the provided parameters.
+-     *
+-     * @param param1 Parameter 1.
+-     * @param param2 Parameter 2.
+-     * @return A new instance of fragment StudentListFragment.
+-     */
+-    // TODO: Rename and change types and number of parameters
+-    public static StudentListFragment newInstance(String param1, String param2) {
+-        StudentListFragment fragment = new StudentListFragment();
+-        Bundle args = new Bundle();
+-        args.putString(ARG_PARAM1, param1);
+-        args.putString(ARG_PARAM2, param2);
+-        fragment.setArguments(args);
+-        return fragment;
+-    }
+-
+-    @Override
+-    public void onCreate(Bundle savedInstanceState) {
+-        super.onCreate(savedInstanceState);
+-        if (getArguments() != null) {
+-            mParam1 = getArguments().getString(ARG_PARAM1);
+-            mParam2 = getArguments().getString(ARG_PARAM2);
+-        }
+-    }
+-
+-    @Override
+-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+-                             Bundle savedInstanceState) {
+-        // Inflate the layout for this fragment
+-        View view = inflater.inflate(R.layout.fragment_student_list, container, false);
+-
+-        Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
+-        ((AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
+-
+-        ActionBar actionBar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+-        actionBar.setTitle("Mobile Attendance");
+-
+-        floatingActionButton = (FloatingActionButton) view.findViewById(R.id.fab_student);
+-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+-            @Override
+-            public void onClick(View view) {
+-                mListener.openAddStudentScreen();
+-            }
+-        });
+-
+-        student = (StudentList) getArguments().getSerializable("List_of_Student");
+-
+- /*Init recycler view*/
+-        recyclerView = (RecyclerView) view.findViewById(R.id.all_student_list);
+-        studentListAdapter = new StudentListAdapter();
+-        studentListAdapter.setStudentList(student.getStudentList());
+-
+-        RecyclerView.LayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
+-        recyclerView.setLayoutManager(mLayoutManager);
+-        recyclerView.setItemAnimator(new DefaultItemAnimator());
+-        recyclerView.setAdapter(studentListAdapter);
+-        return view;
+-
+-    }
+-
+-    // TODO: Rename method, update argument and hook method into UI event
+-    public void onButtonPressed(Uri uri) {
+-        if (mListener != null) {
+-            mListener.onFragmentInteraction(uri);
+-        }
+-    }
+-
+-    @Override
+-    public void onAttach(Context context) {
+-        super.onAttach(context);
+-        if (context instanceof OnFragmentInteractionListener) {
+-            mListener = (OnFragmentInteractionListener) context;
+-        } else {
+-            throw new RuntimeException(context.toString()
+-                    + " must implement OnFragmentInteractionListener");
+-        }
+-    }
+-
+-    @Override
+-    public void onDetach() {
+-        super.onDetach();
+-        mListener = null;
+-    }
+-
+-    public static void refresh(List<Student> studentList) {
+-        student.setStudentList(studentList);
+-        studentListAdapter.notifyDataSetChanged();
+-
+-
+-    }
+-
+-    /**
+-     * This interface must be implemented by activities that contain this
+-     * fragment to allow an interaction in this fragment to be communicated
+-     * to the activity and potentially other fragments contained in that
+-     * activity.
+-     * <p>
+-     * See the Android Training lesson <a href=
+-     * "http://developer.android.com/training/basics/fragments/communicating.html"
+-     * >Communicating with Other Fragments</a> for more information.
+-     */
+-    public interface OnFragmentInteractionListener {
+-        // TODO: Update argument type and name
+-        void onFragmentInteraction(Uri uri);
+-       void openAddStudentScreen();
+-    }
+-}
+Index: app/src/main/res/anim/enter_from_left.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/anim/enter_from_left.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/res/anim/enter_from_left.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="utf-8"?>
++<set xmlns:android="http://schemas.android.com/apk/res/android"
++    android:shareInterpolator="false">
++    <translate
++        android:fromXDelta="-100%" android:toXDelta="0%"
++        android:fromYDelta="0%" android:toYDelta="0%"
++        android:duration="430"/>
++</set>
+\ No newline at end of file
+Index: app/src/main/res/anim/enter_from_right.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/anim/enter_from_right.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/res/anim/enter_from_right.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="utf-8"?>
++<set xmlns:android="http://schemas.android.com/apk/res/android"
++    android:shareInterpolator="false">
++    <translate
++        android:fromXDelta="100%" android:toXDelta="0%"
++        android:fromYDelta="0%" android:toYDelta="0%"
++        android:duration="430" />
++</set>
+\ No newline at end of file
+Index: app/src/main/res/anim/exit_to_left.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/anim/exit_to_left.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/res/anim/exit_to_left.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="utf-8"?>
++<set xmlns:android="http://schemas.android.com/apk/res/android"
++    android:shareInterpolator="false">
++    <translate
++        android:fromXDelta="0%" android:toXDelta="-100%"
++        android:fromYDelta="0%" android:toYDelta="0%"
++        android:duration="430"/>
++</set>
+\ No newline at end of file
+Index: app/src/main/res/anim/exit_to_right.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/anim/exit_to_right.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/res/anim/exit_to_right.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="utf-8"?>
++<set xmlns:android="http://schemas.android.com/apk/res/android"
++    android:shareInterpolator="false">
++    <translate
++        android:fromXDelta="0%" android:toXDelta="100%"
++        android:fromYDelta="0%" android:toYDelta="0%"
++        android:duration="430" />
++</set>
+\ No newline at end of file
+Index: app/src/main/res/drawable/radio_btn_textcolor_selector.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/drawable/radio_btn_textcolor_selector.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/res/drawable/radio_btn_textcolor_selector.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<selector xmlns:android="http://schemas.android.com/apk/res/android">
++
++    <item android:color="#ffffffff" android:state_checked="true" />
++    <item android:color="#ff1c5fab" />
++
++</selector>
+\ No newline at end of file
+Index: app/src/main/res/drawable/radio_button_selector.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/drawable/radio_button_selector.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/res/drawable/radio_button_selector.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,21 @@
++<?xml version="1.0" encoding="utf-8"?>
++<selector xmlns:android="http://schemas.android.com/apk/res/android">
++
++    <item android:state_checked="true">
++        <shape>
++            <solid android:color="#1c5fab" />
++            <stroke android:width="1dp" android:color="#29728497" />
++            <corners android:radius="3dip"/>
++            <padding android:left="0dip" android:top="0dip" android:right="0dip" android:bottom="0dip" />
++        </shape>
++    </item>
++    <item android:state_checked="false">
++        <shape android:shape="rectangle">
++            <solid android:color="#ffffff" />
++            <stroke android:width="1dp" android:color="#29728497" />
++            <corners android:radius="3dip"/>
++            <padding android:left="0dip" android:top="0dip" android:right="0dip" android:bottom="0dip" />
++        </shape>
++    </item>
++
++</selector>
+\ No newline at end of file
+Index: app/src/main/res/drawable/rounded_scheme.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/drawable/rounded_scheme.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/res/drawable/rounded_scheme.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<shape xmlns:android="http://schemas.android.com/apk/res/android">
++    <solid android:color="#FFFFFF"/>
++    <stroke android:width="1dip" android:color="#191dc937" />
++    <corners android:radius="3dip"/>
++    <padding android:left="0dip" android:top="0dip" android:right="0dip" android:bottom="0dip" />
++</shape>
+\ No newline at end of file
+Index: app/src/main/res/layout/list_item.xml
+===================================================================
+--- app/src/main/res/layout/list_item.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/layout/course_list_item.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -18,8 +18,8 @@
+         <LinearLayout
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+-            android:layout_marginRight="24dp"
+             android:layout_gravity="center|left"
++            android:layout_marginRight="24dp"
+             android:orientation="vertical">
+ 
+             <TextView
+@@ -44,13 +44,23 @@
+ 
+     </android.support.v7.widget.CardView>
+ 
++    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
++        android:id="@+id/card_view_separator"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:layout_alignParentBottom="true"
++        android:layout_marginStart="24dp"
++        android:foreground="?android:attr/selectableItemBackground"
++        card_view:cardCornerRadius="0dp"
++        card_view:cardElevation="0dp">
++
+-    <View
+-        android:layout_width="match_parent"
+-        android:layout_height="1dp"
+-        android:layout_alignParentBottom="true"
++        <View
++            android:layout_width="match_parent"
++            android:layout_height="1dp"
++            android:layout_alignParentBottom="true"
+-        android:layout_marginLeft="24dp"
+-        android:background="#1d000000">
++            android:background="#1d000000">
+ 
+-    </View>
++        </View>
++    </android.support.v7.widget.CardView>
+ 
+ </RelativeLayout>
+\ No newline at end of file
+Index: app/src/main/res/layout/date_picker_dialog.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/date_picker_dialog.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/res/layout/date_picker_dialog.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,45 @@
++<?xml version="1.0" encoding="utf-8"?>
++<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="match_parent"
++    android:orientation="vertical">
++
++    <LinearLayout
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:layout_gravity="center"
++        android:orientation="vertical">
++
++        <DatePicker
++            android:id="@+id/date_picker"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_gravity="center"/>
++
++        <LinearLayout
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_margin="8dp"
++            android:orientation="horizontal">
++
++            <Button
++                android:id="@+id/ok_button"
++                android:layout_width="wrap_content"
++                android:layout_height="wrap_content"
++                android:layout_weight="1"
++                android:background="#FAFAFA"
++                android:textColor="@android:color/holo_blue_dark"
++                android:text="OK" />
++
++            <Button
++                android:id="@+id/cancel_button"
++                android:layout_width="wrap_content"
++                android:layout_height="wrap_content"
++                android:layout_marginStart="4dp"
++                android:layout_weight="1"
++                android:background="#FAFAFA"
++                android:textColor="@android:color/holo_blue_dark"
++                android:text="CANCEL" />
++        </LinearLayout>
++    </LinearLayout>
++</LinearLayout>
+\ No newline at end of file
+Index: app/src/main/res/layout/fragment_add_course.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/fragment_add_course.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/layout/fragment_add_course.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -3,87 +3,108 @@
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+     android:background="#FFFFFF"
+-    tools:context="com.example.tung.mobileattendance.AddCourseFragment">
++    tools:context="com.example.tung.mobileattendance.fragments.AddCourseFragment">
+ 
+-    <LinearLayout
++    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
++        android:id="@+id/card_view"
++        android:layout_width="match_parent"
++        android:layout_height="match_parent"
++        android:layout_gravity="center"
++        android:layout_margin="8dp"
++        card_view:cardCornerRadius="3dp"
++        card_view:cardElevation="6dp">
+ 
++        <LinearLayout
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
+-        android:layout_marginTop="40dp"
+-        android:id="@+id/course_layout">
++            android:layout_gravity="center"
++            android:orientation="vertical">
+ 
+-        <android.support.design.widget.TextInputLayout
+-
++            <LinearLayout
++                android:id="@+id/course_layout"
+-            android:layout_width="match_parent"
+-            android:layout_height="wrap_content">
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content">
+ 
+-            <EditText
+-                android:id="@+id/course_edit_text"
++                <android.support.design.widget.TextInputLayout
++                    android:id="@+id/course_input_layout"
++                    android:layout_width="match_parent"
++                    android:layout_height="wrap_content"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
++                    android:layout_marginLeft="32dp"
++                    android:layout_marginRight="32dp"
++                    android:theme="@style/EditTextHint">
++
++                    <android.support.design.widget.TextInputEditText
++                        android:id="@+id/course_edit_text"
+-                android:layout_width="fill_parent"
+-                android:layout_height="wrap_content"
+-                android:layout_gravity="right"
++                        android:layout_width="fill_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_gravity="right"
+-                android:hint=" Course Title"
+-                android:layout_weight="0.5" />
++                        android:layout_weight="0.5"
++                        android:hint=" Course Title" />
+-        </android.support.design.widget.TextInputLayout>
+-    </LinearLayout>
++                </android.support.design.widget.TextInputLayout>
++            </LinearLayout>
+ 
+-    <LinearLayout
++            <LinearLayout
++                android:id="@+id/class_layout"
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
+-        android:layout_marginTop="40dp"
+-        android:id="@+id/class_layout"
+-        android:layout_below="@+id/course_layout">
++                android:layout_below="@+id/course_layout"
++                android:layout_marginTop="40dp">
+ 
+-        <android.support.design.widget.TextInputLayout
++                <android.support.design.widget.TextInputLayout
++                    android:id="@+id/class_input_layout"
+-            android:layout_width="match_parent"
++                    android:layout_width="match_parent"
+-            android:layout_height="wrap_content">
+-
+-            <EditText
+-                android:id="@+id/class_edit_text"
++                    android:layout_height="wrap_content"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
++                    android:layout_marginLeft="32dp"
++                    android:layout_marginRight="32dp"
++                    android:theme="@style/EditTextHint">
++
++                    <android.support.design.widget.TextInputEditText
++                        android:id="@+id/class_edit_text"
+-                android:layout_width="fill_parent"
+-                android:layout_height="wrap_content"
+-                android:layout_gravity="right"
++                        android:layout_width="fill_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_gravity="right"
+-                android:hint="Class"
+-                android:layout_weight="0.5" />
++                        android:layout_weight="0.5"
++                        android:hint="Class" />
+-        </android.support.design.widget.TextInputLayout>
+-    </LinearLayout>
++                </android.support.design.widget.TextInputLayout>
++            </LinearLayout>
+ 
+-    <LinearLayout
++            <LinearLayout
++                android:id="@+id/Section_layout"
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
+-        android:layout_marginTop="40dp"
+-        android:id="@+id/Section_layout"
+-        android:layout_below="@+id/class_layout"
++                android:layout_below="@+id/class_layout"
+-        >
++                android:layout_marginTop="40dp">
+ 
+-        <android.support.design.widget.TextInputLayout
++                <android.support.design.widget.TextInputLayout
++                    android:id="@+id/section_input_layout"
+-            android:layout_width="match_parent"
++                    android:layout_width="match_parent"
+-            android:layout_height="wrap_content">
+-
+-            <EditText
+-                android:id="@+id/section_edit_text"
++                    android:layout_height="wrap_content"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
++                    android:layout_marginLeft="32dp"
++                    android:layout_marginRight="32dp"
++                    android:theme="@style/EditTextHint">
++
++                    <android.support.design.widget.TextInputEditText
++                        android:id="@+id/section_edit_text"
+-                android:layout_width="fill_parent"
+-                android:layout_height="wrap_content"
+-                android:layout_gravity="right"
++                        android:layout_width="fill_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_gravity="right"
+-                android:hint="Section"
+-                android:layout_weight="0.5" />
++                        android:layout_weight="0.5"
++                        android:hint="Section" />
+-        </android.support.design.widget.TextInputLayout>
+-    </LinearLayout>
++                </android.support.design.widget.TextInputLayout>
++            </LinearLayout>
++        </LinearLayout>
++    </android.support.v7.widget.CardView>
++
+     <android.support.design.widget.FloatingActionButton
+         android:id="@+id/fab"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+-        android:layout_gravity="bottom|end"
+-        android:src="@drawable/ic_done_white_24dp1"
+         android:layout_alignParentBottom="true"
+-        android:layout_alignParentRight="true"
+-        android:layout_marginBottom="60dp"
+-        android:layout_marginRight="60dp"/>
++        android:layout_alignParentEnd="true"
++        android:layout_gravity="bottom|end"
++        android:layout_marginBottom="16dp"
++        android:layout_marginEnd="13dp"
++        android:layout_marginRight="16dp"
++        android:src="@drawable/ic_done_white_24dp1" />
+ 
+ </RelativeLayout>
+Index: app/src/main/res/layout/fragment_add_student.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/fragment_add_student.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/layout/fragment_add_student.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,93 +1,112 @@
+-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
++<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+     android:background="#FFFFFF"
+-    tools:context="com.example.tung.mobileattendance.AddCourseFragment"
+-    android:orientation="vertical">
++    android:orientation="vertical"
++    tools:context="com.example.tung.mobileattendance.fragments.AddCourseFragment">
+ 
+-    <LinearLayout
++    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
++        android:id="@+id/card_view"
++        android:layout_width="match_parent"
++        android:layout_height="match_parent"
++        android:layout_gravity="center"
++        android:layout_margin="8dp"
++        card_view:cardCornerRadius="3dp"
++        card_view:cardElevation="6dp">
+ 
++        <LinearLayout
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
+-        android:layout_marginTop="40dp"
+-        android:id="@+id/studentName_layout">
++            android:layout_gravity="center"
++            android:orientation="vertical">
+ 
+-        <android.support.design.widget.TextInputLayout
++            <LinearLayout
+ 
++                android:id="@+id/studentName_layout"
+-            android:layout_width="match_parent"
+-            android:layout_height="wrap_content">
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content">
+ 
+-            <EditText
+-                android:id="@+id/studentName_edit_text"
++                <android.support.design.widget.TextInputLayout
++                    android:id="@+id/s_name_layout"
++                    android:layout_width="match_parent"
++                    android:layout_height="wrap_content"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
++                    android:layout_marginLeft="32dp"
++                    android:layout_marginRight="32dp"
++                    android:theme="@style/EditTextHint">
++
++                    <android.support.design.widget.TextInputEditText
++                        android:id="@+id/studentName_edit_text"
+-                android:layout_width="fill_parent"
+-                android:layout_height="wrap_content"
+-                android:layout_gravity="right"
++                        android:layout_width="fill_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_gravity="right"
+-                android:hint=" Student Name"
+-                android:layout_weight="0.5" />
++                        android:layout_weight="0.5"
++                        android:hint=" Student Name" />
+-        </android.support.design.widget.TextInputLayout>
+-    </LinearLayout>
++                </android.support.design.widget.TextInputLayout>
++            </LinearLayout>
+ 
+-    <LinearLayout
++            <LinearLayout
++                android:id="@+id/class_layout"
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
+-        android:layout_marginTop="40dp"
+-        android:id="@+id/class_layout"
+-        android:layout_below="@+id/course_layout">
++                android:layout_below="@+id/course_layout"
++                android:layout_marginTop="40dp">
+ 
+-        <android.support.design.widget.TextInputLayout
++                <android.support.design.widget.TextInputLayout
++                    android:id="@+id/s_roll_layout"
+-            android:layout_width="match_parent"
++                    android:layout_width="match_parent"
+-            android:layout_height="wrap_content">
+-
+-            <EditText
+-                android:id="@+id/rollno_edit_text"
++                    android:layout_height="wrap_content"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
++                    android:layout_marginLeft="32dp"
++                    android:layout_marginRight="32dp"
++                    android:theme="@style/EditTextHint">
++
++                    <android.support.design.widget.TextInputEditText
++                        android:id="@+id/rollno_edit_text"
+-                android:layout_width="fill_parent"
+-                android:layout_height="wrap_content"
+-                android:layout_gravity="right"
++                        android:layout_width="fill_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_gravity="right"
+-                android:hint="Roll No"
+-                android:layout_weight="0.5" />
++                        android:layout_weight="0.5"
++                        android:hint="Roll No" />
+-        </android.support.design.widget.TextInputLayout>
+-    </LinearLayout>
++                </android.support.design.widget.TextInputLayout>
++            </LinearLayout>
+ 
+-    <LinearLayout
++            <LinearLayout
++                android:id="@+id/Section_layout"
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
+-        android:layout_marginTop="40dp"
+-        android:id="@+id/Section_layout"
++                android:layout_marginTop="40dp">
+ 
+-        >
+-
+-        <android.support.design.widget.TextInputLayout
++                <android.support.design.widget.TextInputLayout
++                    android:id="@+id/s_contact_layout"
+-            android:layout_width="match_parent"
++                    android:layout_width="match_parent"
+-            android:layout_height="wrap_content">
+-
+-            <EditText
+-                android:id="@+id/contact_edit_text"
++                    android:layout_height="wrap_content"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
++                    android:layout_marginLeft="32dp"
++                    android:layout_marginRight="32dp"
++                    android:theme="@style/EditTextHint">
++
++                    <android.support.design.widget.TextInputEditText
++                        android:id="@+id/contact_edit_text"
+-                android:layout_width="fill_parent"
+-                android:layout_height="wrap_content"
+-                android:layout_gravity="right"
++                        android:layout_width="fill_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_gravity="right"
+-                android:hint="Contact No"
+-                android:layout_weight="0.5" />
++                        android:layout_weight="0.5"
++                        android:hint="Contact No" />
+-        </android.support.design.widget.TextInputLayout>
+-    </LinearLayout>
++                </android.support.design.widget.TextInputLayout>
++            </LinearLayout>
++        </LinearLayout>
++    </android.support.v7.widget.CardView>
+ 
+     <android.support.design.widget.FloatingActionButton
+ 
+-        android:layout_marginTop="100dp"
+         android:id="@+id/student_add_float_button"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+-        android:layout_gravity="bottom|end"
+-        android:src="@drawable/ic_done_white_24dp1"
+         android:layout_alignParentBottom="true"
+         android:layout_alignParentRight="true"
+-        android:layout_marginBottom="10dp"
+-        android:layout_marginRight="60dp"/>
++        android:layout_gravity="bottom|end"
++        android:layout_marginBottom="16dp"
++        android:layout_marginRight="16dp"
++        android:layout_marginTop="100dp"
++        android:src="@drawable/ic_done_white_24dp1" />
+ 
+-</LinearLayout>
++</RelativeLayout>
+Index: app/src/main/res/layout/fragment_enroll_student.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/fragment_enroll_student.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/layout/fragment_enroll_student.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -2,33 +2,30 @@
+     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+-    tools:context="com.example.tung.mobileattendance.EnrollStudentFragment"
+-    android:orientation="vertical">
++    android:orientation="vertical"
++    tools:context="com.example.tung.mobileattendance.fragments.EnrollStudentFragment">
+ 
+-    <!-- TODO: Update blank fragment layout -->
+-
+     <LinearLayout
++        android:id="@+id/Section_layout"
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+-        android:layout_marginTop="100dp"
+-        android:id="@+id/Section_layout"
+         android:layout_below="@+id/class_layout"
+-        >
++        android:layout_marginTop="100dp">
+ 
+         <android.support.design.widget.TextInputLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content">
+ 
+             <TextView
+-                android:text="Your Student List is Empty...!"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
+                 android:layout_width="fill_parent"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="right"
++                android:layout_marginLeft="32dp"
++                android:layout_marginRight="32dp"
++                android:layout_weight="0.5"
++                android:text="Your Student List is Empty...!"
+                 android:textColor="#3FB9E6"
+-                android:textSize="25dp"
+-                android:layout_weight="0.5" />
++                android:textSize="25dp" />
+         </android.support.design.widget.TextInputLayout>
+     </LinearLayout>
+ 
+@@ -36,40 +33,37 @@
+ 
+         android:layout_width="match_parent"
+         android:layout_height="wrap_content"
+-        android:layout_marginTop="150dp"
+         android:layout_below="@+id/class_layout"
+-        >
++        android:layout_marginTop="150dp">
+ 
+         <android.support.design.widget.TextInputLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content">
+ 
+             <TextView
+-                android:text="Click on + icon to add a new student ."
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
+                 android:layout_width="fill_parent"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="right"
+-                android:textSize="20dp"
++                android:layout_marginLeft="32dp"
++                android:layout_marginRight="32dp"
++                android:layout_weight="0.5"
++                android:text="Click on + icon to add a new student ."
+                 android:textColor="#000000"
+-                android:layout_weight="0.5" />
++                android:textSize="20dp" />
+         </android.support.design.widget.TextInputLayout>
+     </LinearLayout>
+ 
+ 
+-
+     <android.support.design.widget.FloatingActionButton
+         android:id="@+id/enroll_float_button"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+-        android:layout_gravity="bottom|end"
+-        android:src="@drawable/ic_add_white_24dp"
+         android:layout_alignParentBottom="true"
+         android:layout_alignParentRight="true"
+-        android:layout_marginBottom="60dp"
+-        android:layout_marginRight="60dp"/>
+-
++        android:layout_gravity="bottom|end"
++        android:layout_marginBottom="16dp"
++        android:layout_marginRight="16dp"
++        android:src="@drawable/ic_add_white_24dp" />
+ 
+ 
+ </RelativeLayout>
+Index: app/src/main/res/layout/fragment_home.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/fragment_home.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/layout/fragment_home.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -19,9 +19,23 @@
+         android:layout_height="match_parent"
+         android:layout_below="@id/card_view_separator"
+         android:layout_gravity="center"
+-        card_view:cardCornerRadius="0dp"
+-        card_view:cardElevation="0dp">
+-
++        android:layout_margin="8dp"
++        card_view:cardCornerRadius="3dp"
++        card_view:cardElevation="6dp">
++        <LinearLayout
++            android:id="@+id/no_course_view"
++            android:layout_width="match_parent"
++            android:gravity="center_horizontal|center_vertical"
++            android:visibility="gone"
++            android:layout_height="match_parent">
++            <TextView
++                android:id="@+id/no_course"
++                android:layout_width="wrap_content"
++                android:layout_height="wrap_content"
++                android:textSize="18sp"
++                android:textColor="@color/colorAccent"
++                android:text="No Course ? Please add new one !"/>
++        </LinearLayout>
+         <android.support.v7.widget.RecyclerView
+             android:id="@+id/all_notes_list"
+             android:layout_width="match_parent"
+@@ -30,15 +44,16 @@
+             android:layout_alignParentTop="true" />
+ 
+     </android.support.v7.widget.CardView>
++
+     <android.support.design.widget.FloatingActionButton
+         android:id="@+id/fab"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+-        android:layout_gravity="bottom|end"
+-        android:src="@drawable/ic_add_white_24dp"
+         android:layout_alignParentBottom="true"
+-        android:layout_alignParentRight="true"
+-        android:layout_marginBottom="24dp"
+-        android:layout_marginRight="24dp"/>
++        android:layout_alignParentEnd="true"
++        android:layout_gravity="bottom|end"
++        android:layout_marginBottom="16dp"
++        android:layout_marginEnd="16dp"
++        android:src="@drawable/ic_add_white_24dp" />
+ 
+ </RelativeLayout>
+Index: app/src/main/res/layout/fragment_login_fragment.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/fragment_login_fragment.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/layout/fragment_login_fragment.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -2,95 +2,106 @@
+     xmlns:tools="http://schemas.android.com/tools"
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+-    android:background="#3B5998"
+     android:orientation="vertical"
+-    tools:context="com.example.tung.mobileattendance.LoginFragment">
++    tools:context="com.example.tung.mobileattendance.fragments.LoginFragment">
+ 
+     <!-- TODO: Update blank fragment layout -->
+ 
++    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
++        android:id="@+id/card_view"
++        android:layout_width="match_parent"
++        android:layout_height="match_parent"
++        android:layout_gravity="center"
++        android:background="#fafaff"
++        android:layout_margin="16dp"
++        card_view:cardCornerRadius="7dp">
++    <LinearLayout
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:layout_gravity="center"
++        android:orientation="vertical">
+ 
+-    <LinearLayout
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
+-        android:layout_marginTop="40dp">
++        <LinearLayout
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginTop="40dp">
+ 
+-        <android.support.design.widget.TextInputLayout
+-            android:id="@+id/username_layout"
+-            android:layout_width="match_parent"
++            <android.support.design.widget.TextInputLayout
++                android:id="@+id/username_layout"
++                android:layout_width="match_parent"
++                android:layout_marginLeft="32dp"
++                android:layout_marginRight="32dp"
+-            android:layout_height="wrap_content"
+-            android:theme="@style/EditTextHint">
++                android:layout_height="wrap_content"
++                android:theme="@style/EditTextHint">
+ 
+-            <EditText
++                <android.support.design.widget.TextInputEditText
+-                android:id="@+id/login_username"
+-                android:layout_width="fill_parent"
+-                android:layout_height="wrap_content"
+-                android:layout_gravity="right"
++                    android:id="@+id/login_username"
++                    android:layout_width="fill_parent"
++                    android:layout_height="wrap_content"
++                    android:layout_gravity="right"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
+-                android:layout_weight="0.5"
+-                android:hint="Username"
++                    android:layout_weight="0.5"
++                    android:hint="Username"
+-                android:textColor="#FFFFFF" />
++                    android:textColor="#001426" />
+-        </android.support.design.widget.TextInputLayout>
+-    </LinearLayout>
++            </android.support.design.widget.TextInputLayout>
++        </LinearLayout>
+ 
+-    <LinearLayout
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
+-        android:layout_marginTop="50dp">
++        <LinearLayout
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginTop="50dp">
+ 
+ 
+-        <android.support.design.widget.TextInputLayout
+-            android:id="@+id/password_layout"
+-            android:layout_width="match_parent"
+-            android:layout_height="wrap_content"
++            <android.support.design.widget.TextInputLayout
++                android:id="@+id/password_layout"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:layout_marginLeft="32dp"
++                android:layout_marginRight="32dp"
+-            android:theme="@style/EditTextHint">
++                android:theme="@style/EditTextHint">
+ 
+-            <EditText
++                <android.support.design.widget.TextInputEditText
+-                android:id="@+id/login_password"
+-                android:layout_width="fill_parent"
+-                android:layout_height="wrap_content"
+-                android:layout_gravity="right"
++                    android:id="@+id/login_password"
++                    android:layout_width="fill_parent"
++                    android:layout_height="wrap_content"
++                    android:layout_gravity="right"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
+-                android:layout_weight="0.5"
+-                android:hint="Password"
+-                android:inputType="textPassword"
++                    android:layout_weight="0.5"
++                    android:hint="Password"
++                    android:inputType="textPassword"
+-                android:textColor="#FFFFFF"
+-                android:textColorHint="#FFFFFF" />
++                    android:textColor="#001426" />
+-        </android.support.design.widget.TextInputLayout>
+-    </LinearLayout>
++            </android.support.design.widget.TextInputLayout>
++        </LinearLayout>
+ 
+-    <LinearLayout
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
+-        android:layout_marginTop="50dp"
+-        android:gravity="center"
+-        android:orientation="vertical">
++        <LinearLayout
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_marginTop="50dp"
++            android:gravity="center"
++            android:orientation="vertical">
+ 
+-        <Button
+-            android:id="@+id/Login_button"
+-            android:layout_width="match_parent"
+-            android:layout_height="wrap_content"
+-            android:layout_marginLeft="32dp"
+-            android:layout_marginRight="32dp"
++            <Button
++                android:id="@+id/Login_button"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:layout_marginLeft="32dp"
++                android:layout_marginRight="32dp"
+-            android:background="@color/cardview_dark_background"
++                android:background="@color/colorPrimaryDark"
+-            android:text="LOGIN"
++                android:text="LOGIN"
+-            android:textColor="#FFFFFF" />
++                android:textColor="#fafaff" />
+ 
+ 
+-        <TextView
+-            android:id="@+id/sign_up_textView"
+-            android:layout_width="wrap_content"
+-            android:layout_height="wrap_content"
+-            android:layout_marginTop="20dp"
+-            android:text="Not Resistered yet? Sing Up Now"
++            <TextView
++                android:id="@+id/sign_up_textView"
++                android:layout_width="wrap_content"
++                android:layout_height="wrap_content"
++                android:layout_marginTop="20dp"
++                android:text="Not Resistered yet? Sing Up Now"
+-            android:textColor="#FFFFFF"
+-            android:textSize="15dp" />
++                android:textColor="#f05d5e"
++                android:textSize="16sp" />
+ 
+ 
+-    </LinearLayout>
++        </LinearLayout>
+-
+-
++    </LinearLayout>
++    </android.support.v7.widget.CardView>
+ </LinearLayout>
+ 
+ 
+Index: app/src/main/res/layout/fragment_signup.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/fragment_signup.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/layout/fragment_signup.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -3,117 +3,116 @@
+     android:layout_width="match_parent"
+     android:layout_height="match_parent"
+     android:orientation="vertical"
+-    android:background="#e43f3f"
+-    tools:context="com.example.tung.mobileattendance.LoginFragment">
++    tools:context="com.example.tung.mobileattendance.fragments.LoginFragment">
+ 
+-    <!-- TODO: Update blank fragment layout -->
++    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
++        android:id="@+id/card_view"
++        android:layout_width="match_parent"
++        android:layout_height="match_parent"
++        android:layout_gravity="center"
++        android:layout_margin="16dp"
++        android:background="#fafaff"
++        card_view:cardCornerRadius="7dp">
+ 
++        <LinearLayout
++            android:layout_width="match_parent"
++            android:layout_height="wrap_content"
++            android:layout_gravity="center"
++            android:orientation="vertical">
+ 
+-
+-    <LinearLayout
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
+-        android:layout_marginTop="40dp">
++            <LinearLayout
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:layout_marginTop="40dp">
+ 
+-        <android.support.design.widget.TextInputLayout
++                <android.support.design.widget.TextInputLayout
+-
++                    android:id="@+id/username_layout"
+-            android:layout_width="match_parent"
++                    android:layout_width="match_parent"
+-            android:theme="@style/EditTextHint"
+-            android:layout_height="wrap_content">
+-
+-            <EditText
+-                android:id="@+id/username1_layout"
+-                android:textColor="#FFFFFF"
++                    android:layout_height="wrap_content"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
++                    android:layout_marginLeft="32dp"
++                    android:layout_marginRight="32dp"
++                    android:theme="@style/EditTextHint">
++
++                    <android.support.design.widget.TextInputEditText
++                        android:id="@+id/username1_layout"
+-                android:layout_width="fill_parent"
+-                android:layout_height="wrap_content"
+-                android:layout_gravity="right"
++                        android:layout_width="fill_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_gravity="right"
++                        android:layout_weight="0.5"
+-                android:hint="Username"
++                        android:hint="Username"
+-                android:layout_weight="0.5" />
++                        android:textColor="#001426" />
+-        </android.support.design.widget.TextInputLayout>
+-    </LinearLayout>
++                </android.support.design.widget.TextInputLayout>
++            </LinearLayout>
+ 
+-    <LinearLayout
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
+-        android:layout_marginTop="40dp">
++            <LinearLayout
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:layout_marginTop="40dp">
+ 
+-        <android.support.design.widget.TextInputLayout
++                <android.support.design.widget.TextInputLayout
+-
++                    android:id="@+id/email_input_layout"
+-            android:layout_width="match_parent"
++                    android:layout_width="match_parent"
+-            android:theme="@style/EditTextHint"
+-            android:layout_height="wrap_content">
+-
+-            <EditText
+-                android:id="@+id/email_layout"
+-                android:textColor="#FFFFFF"
++                    android:layout_height="wrap_content"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
++                    android:layout_marginLeft="32dp"
++                    android:layout_marginRight="32dp"
++                    android:theme="@style/EditTextHint">
++
++                    <android.support.design.widget.TextInputEditText
++                        android:id="@+id/email_layout"
+-                android:layout_width="fill_parent"
+-                android:layout_height="wrap_content"
+-                android:layout_gravity="right"
++                        android:layout_width="fill_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_gravity="right"
++                        android:layout_weight="0.5"
+-                android:hint="Email"
+-                android:inputType="textEmailAddress"
++                        android:hint="Email"
++                        android:inputType="textEmailAddress"
+-                android:layout_weight="0.5" />
++                        android:textColor="#001426" />
+-        </android.support.design.widget.TextInputLayout>
+-    </LinearLayout>
++                </android.support.design.widget.TextInputLayout>
++            </LinearLayout>
+ 
+-    <LinearLayout
+-        android:layout_width="match_parent"
+-        android:layout_height="wrap_content"
+-        android:layout_marginTop="50dp">
++            <LinearLayout
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:layout_marginTop="50dp">
+ 
+-
+-
+-        <android.support.design.widget.TextInputLayout
++                <android.support.design.widget.TextInputLayout
+-            android:theme="@style/EditTextHint"
++                    android:id="@+id/password_input_layout"
+-            android:layout_width="match_parent"
++                    android:layout_width="match_parent"
+-            android:layout_height="wrap_content">
+-
+-            <EditText
+-                android:id="@+id/password_layout"
+-
+-                android:textColor="#FFFFFF"
++                    android:layout_height="wrap_content"
+-                android:layout_marginLeft="32dp"
+-                android:layout_marginRight="32dp"
++                    android:layout_marginLeft="32dp"
++                    android:layout_marginRight="32dp"
++                    android:theme="@style/EditTextHint">
++
++                    <android.support.design.widget.TextInputEditText
++                        android:id="@+id/password_layout"
+-                android:layout_width="fill_parent"
+-                android:layout_height="wrap_content"
+-                android:layout_gravity="right"
++                        android:layout_width="fill_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_gravity="right"
+-                android:hint="Password"
+-                android:textColorHint="#FFFFFF"
+-                android:layout_weight="0.5"
++                        android:layout_weight="0.5"
+-                android:inputType="textPassword" />
++                        android:hint="Password"
++                        android:inputType="textPassword"
++                        android:textColor="#001426" />
+-        </android.support.design.widget.TextInputLayout>
+-    </LinearLayout>
++                </android.support.design.widget.TextInputLayout>
++            </LinearLayout>
+ 
+-    <LinearLayout
+-        android:layout_width="fill_parent"
+-        android:layout_height="wrap_content"
+-        android:layout_marginTop="50dp"
++            <LinearLayout
++                android:layout_width="fill_parent"
++                android:layout_height="wrap_content"
++                android:layout_marginTop="50dp"
++                android:gravity="center"
+-        android:orientation="vertical">
++                android:orientation="vertical">
+ 
+-        <Button
+-            android:id="@+id/sign_button"
++                <Button
++                    android:id="@+id/sign_button"
+-
+-            android:layout_marginLeft="32dp"
+-            android:layout_marginRight="32dp"
+-            android:layout_width="match_parent"
+-            android:layout_height="wrap_content"
++                    android:layout_width="match_parent"
++                    android:layout_height="wrap_content"
+-            android:textColor="#FFFFFF"
++                    android:layout_marginLeft="32dp"
++                    android:layout_marginRight="32dp"
++                    android:background="@color/colorPrimaryDark"
+-            android:text="SIGNUP"
++                    android:text="SIGNUP"
+-            android:background="@color/cardview_dark_background"
+-            />
+-
+-
+-
+-
+-
++                    android:textColor="#FAFAFA" />
+-    </LinearLayout>
++            </LinearLayout>
+-
+-
+-
+-
++        </LinearLayout>
++    </android.support.v7.widget.CardView>
+ </LinearLayout>
+ 
+ 
+Index: app/src/main/res/layout/fragment_student_list.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/fragment_student_list.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/layout/fragment_student_list.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -19,9 +19,23 @@
+         android:layout_height="match_parent"
+         android:layout_below="@id/card_view_separator"
+         android:layout_gravity="center"
+-        card_view:cardCornerRadius="0dp"
+-        card_view:cardElevation="0dp">
+-
++        android:layout_margin="8dp"
++        card_view:cardCornerRadius="3dp"
++        card_view:cardElevation="4dp">
++        <LinearLayout
++            android:id="@+id/no_students_view"
++            android:layout_width="match_parent"
++            android:gravity="center_horizontal|center_vertical"
++            android:visibility="gone"
++            android:layout_height="match_parent">
++            <TextView
++                android:id="@+id/no_students"
++                android:layout_width="wrap_content"
++                android:layout_height="wrap_content"
++                android:textSize="18sp"
++                android:textColor="@color/colorAccent"
++                android:text="No Students ? Please add new one !"/>
++        </LinearLayout>
+         <android.support.v7.widget.RecyclerView
+             android:id="@+id/all_student_list"
+             android:layout_width="match_parent"
+@@ -38,7 +52,7 @@
+         android:src="@drawable/ic_add_white_24dp"
+         android:layout_alignParentBottom="true"
+         android:layout_alignParentRight="true"
+-        android:layout_marginBottom="24dp"
+-        android:layout_marginRight="24dp"/>
++        android:layout_marginBottom="16dp"
++        android:layout_marginRight="16dp"/>
+ 
+ </RelativeLayout>
+Index: app/src/main/res/layout/student_list_item.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/student_list_item.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/res/layout/student_list_item.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,123 @@
++<?xml version="1.0" encoding="utf-8"?>
++<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="match_parent"
++    android:layout_height="70dp"
++    android:orientation="vertical">
++
++    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
++        android:id="@+id/card_view"
++        android:layout_width="match_parent"
++        android:layout_height="match_parent"
++        android:layout_gravity="center"
++        android:layout_marginLeft="24dp"
++        android:layout_marginTop="2dp"
++        android:foreground="?android:attr/selectableItemBackground"
++        card_view:cardCornerRadius="0dp"
++        card_view:cardElevation="0dp">
++
++        <LinearLayout
++            android:layout_width="match_parent"
++            android:orientation="horizontal"
++            android:layout_height="match_parent">
++            <LinearLayout
++                android:layout_width="170dp"
++                android:layout_height="wrap_content"
++                android:layout_gravity="center|left"
++                android:orientation="vertical">
++
++                <TextView
++                    android:id="@+id/header_text"
++                    android:layout_width="match_parent"
++                    android:layout_height="26dp"
++                    android:textSize="20sp" />
++
++                <TextView
++                    android:id="@+id/content_text"
++                    android:layout_width="match_parent"
++                    android:layout_height="20dp"
++                    android:layout_alignParentBottom="true"
++                    android:layout_below="@id/header_text"
++                    android:layout_marginBottom="4dp"
++                    android:layout_marginTop="3dp"
++                    android:textSize="14sp" />
++
++
++            </LinearLayout>
++
++            <LinearLayout
++                android:layout_width="150dp"
++                android:layout_height="wrap_content"
++                android:layout_marginTop="18dp"
++                android:gravity="right">
++
++                <RadioGroup
++                    android:layout_width="fill_parent"
++                    android:layout_height="wrap_content"
++                    android:layout_gravity="center|right"
++                    android:orientation="horizontal">
++
++                    <RadioButton
++                        android:id="@+id/present_radio_button"
++                        android:layout_width="match_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_weight="1"
++                        android:background="@drawable/radio_button_selector"
++                        android:button="@null"
++                        android:checked="false"
++                        android:gravity="center"
++                        android:text="P"
++                        android:textColor="@drawable/radio_btn_textcolor_selector"
++                        android:textSize="18sp" />
++
++                    <RadioButton
++                        android:id="@+id/absent_radio_button"
++                        android:layout_width="match_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_weight="1"
++                        android:background="@drawable/radio_button_selector"
++                        android:button="@null"
++                        android:checked="false"
++                        android:gravity="center"
++                        android:text="A"
++                        android:textColor="@drawable/radio_btn_textcolor_selector"
++                        android:textSize="18sp" />
++
++                    <RadioButton
++                        android:id="@+id/leave_radio_button"
++                        android:layout_width="match_parent"
++                        android:layout_height="wrap_content"
++                        android:layout_weight="1"
++                        android:layout_marginRight="8dp"
++                        android:background="@drawable/radio_button_selector"
++                        android:button="@null"
++                        android:checked="false"
++                        android:gravity="center"
++                        android:text="L"
++                        android:textColor="@drawable/radio_btn_textcolor_selector"
++                        android:textSize="18sp" />
++                </RadioGroup>
++            </LinearLayout>
++
++        </LinearLayout>
++    </android.support.v7.widget.CardView>
++
++    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
++        android:id="@+id/card_view_separator"
++        android:layout_width="match_parent"
++        android:layout_height="wrap_content"
++        android:layout_alignParentBottom="true"
++        android:layout_marginStart="24dp"
++        android:foreground="?android:attr/selectableItemBackground"
++        card_view:cardCornerRadius="0dp"
++        card_view:cardElevation="0dp">
++
++        <View
++            android:layout_width="match_parent"
++            android:layout_height="1dp"
++            android:layout_alignParentBottom="true"
++            android:background="#1d000000">
++
++        </View>
++    </android.support.v7.widget.CardView>
++
++</RelativeLayout>
+\ No newline at end of file
+Index: app/src/main/res/layout/toolbar.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/layout/toolbar.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/layout/toolbar.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -3,7 +3,7 @@
+     android:id="@+id/toolbar"
+     android:layout_width="match_parent"
+     android:layout_height="?attr/actionBarSize"
+-    android:background="#3F51B5"
++    android:background="@color/colorPrimaryDark"
+     android:elevation="7dp"
+     app:contentInsetStart="18dp"
+     app:titleTextAppearance="@style/Toolbar.TitleText" />
+\ No newline at end of file
+Index: app/src/main/res/menu/menu.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/menu/menu.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
++++ app/src/main/res/menu/menu.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -0,0 +1,16 @@
++<?xml version="1.0" encoding="utf-8"?>
++<menu xmlns:android="http://schemas.android.com/apk/res/android"
++    xmlns:app="http://schemas.android.com/apk/res-auto">
++    <item
++        android:id="@+id/event_action"
++        android:title="@string/event"
++        android:icon="@mipmap/ic_event_white_18dp"
++        app:showAsAction="always">
++    </item>
++    <item
++        android:id="@+id/done_action"
++        android:title="@string/done"
++        android:icon="@mipmap/ic_done_white_18dp"
++        app:showAsAction="always">
++    </item>
++</menu>
+\ No newline at end of file
+Index: app/src/main/res/values/colors.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/values/colors.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/values/colors.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
+-    <color name="colorPrimary">#3F51B5</color>
+-    <color name="colorPrimaryDark">#303F9F</color>
++    <color name="colorPrimary">#2b5680</color>
++    <color name="colorPrimaryDark">#235789</color>
+     <color name="colorAccent">#FF4081</color>
+ </resources>
+Index: app/src/main/res/values/strings.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/values/strings.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/values/strings.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,6 +1,5 @@
+ <resources>
+-    <string name="app_name">MobileAttendance</string>
+-
+-    <!-- TODO: Remove or change this placeholder text -->
+-    <string name="hello_blank_fragment">Hello blank fragment</string>
++    <string name="app_name">Class Roll</string>
++    <string name="done">Save</string>
++    <string name="event">Date</string>
+ </resources>
+Index: app/src/main/res/values/styles.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/res/values/styles.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/res/values/styles.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -1,23 +1,25 @@
+ <resources>
+ 
+     <!-- Base application theme. -->
+-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+-        <!-- Customize your theme here. -->
++    <style name="AppTheme" parent="@style/Theme.AppCompat.Light.NoActionBar">
+         <item name="colorPrimary">@color/colorPrimary</item>
+         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+         <item name="colorAccent">@color/colorAccent</item>
++        <item name="windowActionBar">false</item>
++        <item name="theme">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
+     </style>
+-
+-    <style name="EditTextHint" parent="TextAppearance.AppCompat">
+-        <item name="colorAccent">@android:color/white</item>
+-        <item name="android:textColorHint">#FFFFFF</item>
+-       <!-- <item name="colorControlNormal">@color/BackgroundtWhiteColor</item>
+-        <item name="colorControlActivated">@color/your color</item>
++    <style name="EditTextHint">
++        <item name="colorAccent">@android:color/holo_orange_dark</item>
++        <item name="android:textColorHint">#07beb8</item>
++        <item name="colorControlNormal">@android:color/holo_orange_light</item>
++        <item name="android:textColorHighlight">@color/colorPrimary</item>
++        <item name="android:textColorLink">@color/colorPrimary</item>
++        <!--<item name="colorControlActivated">@color/your color</item>
+         <item name="colorControlHighlight">@color/BackgroundtWhiteColor</item>-->
+     </style>
+-    <style name="Toolbar.TitleText" parent="Theme.AppCompat.Light.DarkActionBar">
++    <style name="Toolbar.TitleText" parent="@style/Theme.AppCompat.Light.NoActionBar">
+         <item name="android:textSize">18sp</item>
+-        <item name="android:textColor">#ffffff</item>
++        <item name="android:textColor">#fafaff</item>
+     </style>
+ 
+ </resources>
+Index: app/src/main/AndroidManifest.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/AndroidManifest.xml	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/src/main/AndroidManifest.xml	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -4,7 +4,7 @@
+ 
+     <application
+         android:allowBackup="true"
+-        android:icon="@mipmap/ic_launcher"
++        android:icon="@mipmap/class_roll"
+         android:label="@string/app_name"
+         android:supportsRtl="true"
+         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+\ No newline at end of file
+Index: app/build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/build.gradle	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ app/build.gradle	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -5,7 +5,7 @@
+     buildToolsVersion "24.0.3"
+     defaultConfig {
+         applicationId "com.example.tung.mobileattendance"
+-        minSdkVersion 19
++        minSdkVersion 15
+         targetSdkVersion 23
+         versionCode 1
+         versionName "1.0"
+Index: build.gradle
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- build.gradle	(revision 33fd80231fbe481df7d7ae0c99c2c54e11c36036)
++++ build.gradle	(revision e7673a3feac9aa9d18e89a7b95b75c9c8d3bfe91)
+@@ -5,7 +5,7 @@
+         jcenter()
+     }
+     dependencies {
+-        classpath 'com.android.tools.build:gradle:2.2.0'
++        classpath 'com.android.tools.build:gradle:2.2.1'
+ 
+         // NOTE: Do not place your application dependencies here; they belong
+         // in the individual module build.gradle files
