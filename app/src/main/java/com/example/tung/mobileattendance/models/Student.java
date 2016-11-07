@@ -15,6 +15,8 @@ public class Student implements Serializable {
     private boolean isOnLeave;
     private boolean isPresent;
     private boolean isAbsent;
+    private String date;
+
 
 
     public int getId() {
@@ -79,5 +81,13 @@ public class Student implements Serializable {
 
     public void setAbsent(boolean absent) {
         isAbsent = absent;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
     }
 }

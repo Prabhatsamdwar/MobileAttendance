@@ -39,6 +39,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     //Column Name
     private static final String STUDENT_TABLE = "student";
+    private static final String PRESENCE_TABLE = "presence";
 
     private static final String STUDENT_ID = "id";
     private static final String STUDENT_NAME = "studentName";
@@ -56,8 +57,10 @@ public class DataBaseHelper extends SQLiteOpenHelper {
             COURSE_TABLE + "( " + COURSE_ID + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COURSE_TITLE + " TEXT, " + COURSE_CLASS + " TEXT, " + COURSE_SECTION + " TEXT)";
 
     private static final String CREATE_STUDENT_TABLE = "CREATE TABLE " + STUDENT_TABLE + " ( " + STUDENT_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " + STUDENT_NAME + " TEXT, " + ROLL_NO + " TEXT, " + CONTACT + " TEXT" + ", " +
-            "course_id" + " INTEGER, attendance_date DATETIME DEFAULT CURRENT_TIMESTAMP, " +
-            IS_ABSENT + " INTEGER DEFAULT 0, " + IS_PRESENT + " INTEGER DEFAULT 0, " + IS_LEAVE + " INTEGER DEFAULT 0)";
+            "course_id" + " INTEGER)";
+
+    private static final String CREATE_PRESENCE_TABLE = "CREATE TABLE " + PRESENCE_TABLE + " ( " + STUDENT_ID + " INTEGER , " + " date DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+            IS_ABSENT + " INTEGER DEFAULT 0, " + IS_PRESENT + " INTEGER DEFAULT 0, " + IS_LEAVE + " INTEGER DEFAULT 0, PRIMARY KEY (id, date))";
 
 
     public DataBaseHelper(Context context) {
@@ -78,6 +81,7 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         sqLiteDatabase.execSQL(CREATE_COURSE_TABLE);
         sqLiteDatabase.execSQL(CREATE_LOGIN_TABLE);
         sqLiteDatabase.execSQL(CREATE_STUDENT_TABLE);
+        sqLiteDatabase.execSQL(CREATE_PRESENCE_TABLE);
     }
 
     @Override
@@ -102,8 +106,18 @@ public class DataBaseHelper extends SQLiteOpenHelper {
         contentValues.put(ROLL_NO, student.getRollNo());
         contentValues.put(CONTACT, student.getContact());
         contentValues.put("course_id", student.getCourseId());
-        contentValues.put("attendance_date", Utils.getDateTime());
+        /*contentValues.put("attendance_date", Utils.getDateTime());*/
         long id = sqLiteDatabase.insert(STUDENT_TABLE, null, contentValues);
+
+        ContentValues values = new ContentValues();
+
+        values.put("id", String.valueOf(id));
+        values.put(IS_ABSENT, (student.isAbsent() ? 1 : 0));
+        values.put(IS_PRESENT, (student.isPresent() ? 1 : 0));
+        values.put(IS_LEAVE, (student.isOnLeave() ? 1 : 0));
+        values.put("date", Utils.getDateTime());
+        sqLiteDatabase.insertWithOnConflict(PRESENCE_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+
         return id;
     }
 
@@ -200,25 +214,56 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     public List<Student> getStudentByCourse(int courseId, String currentDate) {
         List<Student> studentList = new ArrayList<Student>();
-        String selectQuery = "SELECT  * FROM " + STUDENT_TABLE + " where course_id = " + courseId + " and attendance_date = " + currentDate;
+
+        String presenceQuery = "select * from presence p join student s on p.id=s.id and p.date=" + Utils.getDateTime();
+
+
+        String selectQuery = "select * from presence p join student s on p.id=s.id and s.course_id = " + courseId;
+        if (currentDate != null) {
+            presenceQuery = "select * from presence p join student s on p.id=s.id and date=" + currentDate;
+            selectQuery += " and date = " + currentDate;
+        }
+
         SQLiteDatabase sqLiteDatabase = this.getReadableDatabase();
-        Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
-        Log.d("Query",selectQuery);
-        // looping through all rows and adding to list
-        if (cursor.moveToFirst()) {
-            do {
-                Student student = new Student();
-                student.setId(cursor.getInt((cursor.getColumnIndex(STUDENT_ID))));
-                student.setStudentName(cursor.getString(cursor.getColumnIndex(STUDENT_NAME)));
-                student.setRollNo(cursor.getString(cursor.getColumnIndex(ROLL_NO)));
-                student.setContact(cursor.getString(cursor.getColumnIndex(CONTACT)));
-                student.setOnLeave(cursor.getInt(cursor.getColumnIndex(IS_LEAVE)) != 0);
-                student.setAbsent(cursor.getInt(cursor.getColumnIndex(IS_ABSENT)) != 0);
-                student.setPresent(cursor.getInt(cursor.getColumnIndex(IS_PRESENT)) != 0);
-                // adding to notesArrayList list
-                Log.d("test", cursor.getString(cursor.getColumnIndex(IS_PRESENT)));
-                studentList.add(student);
-            } while (cursor.moveToNext());
+
+        Log.d("Query", "presenceQuery: " + presenceQuery);
+        Log.d("Query", "selectQuery: " + selectQuery);
+        Cursor presenceCursor = sqLiteDatabase.rawQuery(presenceQuery, null);
+        if (presenceCursor.getCount() > 0) {
+            /*Read from presence table then create student object*/
+            Log.d("Query", "Read from presence table then create student object");
+            if (presenceCursor.moveToFirst()) {
+                do {
+                    Student student = new Student();
+                    student.setId(presenceCursor.getInt((presenceCursor.getColumnIndex(STUDENT_ID))));
+                    student.setStudentName(presenceCursor.getString(presenceCursor.getColumnIndex(STUDENT_NAME)));
+                    student.setRollNo(presenceCursor.getString(presenceCursor.getColumnIndex(ROLL_NO)));
+                    student.setContact(presenceCursor.getString(presenceCursor.getColumnIndex(CONTACT)));
+                    student.setOnLeave(presenceCursor.getInt(presenceCursor.getColumnIndex(IS_LEAVE)) != 0);
+                    student.setAbsent(presenceCursor.getInt(presenceCursor.getColumnIndex(IS_ABSENT)) != 0);
+                    student.setPresent(presenceCursor.getInt(presenceCursor.getColumnIndex(IS_PRESENT)) != 0);
+                    student.setDate(presenceCursor.getString(presenceCursor.getColumnIndex("date")));
+                    // adding to notesArrayList list
+//                Log.d("test", presenceCursor.getString(presenceCursor.getColumnIndex(IS_PRESENT)));
+                    studentList.add(student);
+                } while (presenceCursor.moveToNext());
+            }
+        } else {
+            /*Read from student table then create student object*/
+            Log.d("Query", "Read from student table then create student object");
+            Cursor cursor = sqLiteDatabase.rawQuery(selectQuery, null);
+            Log.d("Query", selectQuery);
+            // looping through all rows and adding to list
+            if (cursor.moveToFirst()) {
+                do {
+                    Student student = new Student();
+                    student.setId(cursor.getInt((cursor.getColumnIndex(STUDENT_ID))));
+                    student.setStudentName(cursor.getString(cursor.getColumnIndex(STUDENT_NAME)));
+                    student.setRollNo(cursor.getString(cursor.getColumnIndex(ROLL_NO)));
+                    student.setContact(cursor.getString(cursor.getColumnIndex(CONTACT)));
+                    studentList.add(student);
+                } while (cursor.moveToNext());
+            }
         }
         return studentList;
     }
@@ -257,12 +302,28 @@ public class DataBaseHelper extends SQLiteOpenHelper {
 
     public int updateAttendanceForTheDay(Student student) {
         SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
-
         ContentValues values = new ContentValues();
+        values.put("id", String.valueOf(student.getId()));
         values.put(IS_ABSENT, (student.isAbsent() ? 1 : 0));
         values.put(IS_PRESENT, (student.isPresent() ? 1 : 0));
         values.put(IS_LEAVE, (student.isOnLeave() ? 1 : 0));
+        values.put("date", Utils.getDateTime());
+        int id = (int) sqLiteDatabase.insertWithOnConflict(PRESENCE_TABLE, null, values, SQLiteDatabase.CONFLICT_IGNORE);
+        if (id == -1) {
+//            sqLiteDatabase.update(PRESENCE_TABLE, values, STUDENT_ID + " = ?", new String[]{String.valueOf(student.getId())});
+            sqLiteDatabase.update(PRESENCE_TABLE, values, STUDENT_ID + " = ? " + " and date = ? ", new String[]{String.valueOf(student.getId()), Utils.getDateTime()});
+        }
 
-        return sqLiteDatabase.update(STUDENT_TABLE, values, STUDENT_ID + " = ?", new String[]{String.valueOf(student.getId())});
+        return id;
+    }
+
+    public void deleteCourse(int courseId) {
+
+        SQLiteDatabase sqLiteDatabase = this.getWritableDatabase();
+        sqLiteDatabase.delete(COURSE_TABLE, COURSE_ID + " = ?",
+                new String[]{String.valueOf(courseId)});
+        sqLiteDatabase.delete(STUDENT_TABLE, "course_id" + " = ?",
+                new String[]{String.valueOf(courseId)});
+        sqLiteDatabase.close();
     }
 }

@@ -93,10 +93,12 @@ public class StudentListFragment extends Fragment {
 
         studentList = (StudentList) getArguments().getSerializable(LIST_OF_STUDENTS);
         final View viewNoStudent = view.findViewById(R.id.no_students_view);
+        final TextView noCourseTextView = (TextView) view.findViewById(R.id.no_students);
         if (studentList != null && studentList.getStudentList().size() < 1) {
             /*Display Custom view for add new Student*/
             viewNoStudent.setVisibility(View.VISIBLE);
         } else {
+            noCourseTextView.setText("");
             viewNoStudent.setVisibility(View.INVISIBLE);
         }
  /*Init recycler view*/
@@ -138,6 +140,8 @@ public class StudentListFragment extends Fragment {
 
     public void refresh(List<Student> studentList) {
         Log.d("StudentListFragment", "refreshing StudentListFragment");
+
+//        recyclerView.invalidate();
         studentListAdapter.setStudentList(studentList);
         studentListAdapter.notifyDataSetChanged();
     }
@@ -151,6 +155,10 @@ public class StudentListFragment extends Fragment {
         void getAllStudentByDate(int day, int month, int year, int courseId);
 
         void setAttendanceForTheDay(List<Student> studentList);
+
+        void onClickPrintMenu(int courseId);
+
+        void onClickDeleteCourseMenu(int courseId);
     }
 
     @Override
@@ -173,6 +181,14 @@ public class StudentListFragment extends Fragment {
         }
         if (id == R.id.print_action) {
 //            showPopUpForDatePicker();
+            mListener.onClickPrintMenu(courseId);
+            Log.d("Menu", "On Click Print Icon");
+            return true;
+        }
+
+        if (id == R.id.delete_action) {
+//            showPopUpForDatePicker();
+            mListener.onClickDeleteCourseMenu(courseId);
             Log.d("Menu", "On Click Print Icon");
             return true;
         }

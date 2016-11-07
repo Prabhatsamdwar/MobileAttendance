@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.example.tung.mobileattendance.adapters.HomeListAdapter;
 import com.example.tung.mobileattendance.OnListItemClickListener;
@@ -67,8 +68,11 @@ public class HomeFragment extends Fragment implements OnListItemClickListener {
 
         final View noCourseView = view.findViewById(R.id.no_course_view);
         courses = (CourseList) getArguments().getSerializable("List_of_Course");
+        final TextView noCourseText = (TextView) view.findViewById(R.id.no_course);
         if (courses != null && courses.getCourseList().size() < 1) {
             noCourseView.setVisibility(View.VISIBLE);
+        }else{
+            noCourseText.setText("");
         }
  /*Init recycler view*/
         recyclerView = (RecyclerView) view.findViewById(R.id.all_notes_list);
