@@ -27,7 +27,7 @@ public class SignUpFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     public SignUpFragment() {
-        // Required empty public constructor
+
     }
 
     @Override
